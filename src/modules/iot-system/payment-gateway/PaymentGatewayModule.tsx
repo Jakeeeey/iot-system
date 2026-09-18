@@ -1,84 +1,58 @@
 "use client";
 
-import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { PaymentGatewayProvider, usePaymentGatewayContext } from "./providers/PaymentGatewayProvider";
-import { SmartCardVisualizer } from "./components/SmartCardVisualizer";
-import { AmountSelector } from "./components/AmountSelector";
-import { PaymentChannelSelector } from "./components/PaymentChannelSelector";
-import { TransactionSummaryCard } from "./components/TransactionSummaryCard";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { PaymentGatewayProvider } from "./providers/PaymentGatewayProvider";
+import { PaymentPortalType, EnvironmentMode } from "./types";
+import { ApexPayHeader } from "./components/ApexPayHeader";
+import { ConsumerWalletView } from "./components/ConsumerWalletView";
+import { MerchantPortalView } from "./components/MerchantPortalView";
+import { OpsConsoleView } from "./components/OpsConsoleView";
 
-function PaymentGatewayView() {
-    const {
-        card,
-        presetAmounts,
-        selectedAmount,
-        customAmount,
-        paymentMethod,
-        isProcessing,
-        amount,
-        fee,
-        total,
-        vat,
-        projectedBalance,
-        handleSelectPreset,
-        handleCustomChange,
-        setPaymentMethod,
-        handleProcessTopUp,
-    } = usePaymentGatewayContext();
+function PaymentGatewayInner() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const portalParam = searchParams.get("portal") as PaymentPortalType | null;
+
+    const [activePortal, setActivePortal] = useState<PaymentPortalType>(
+        portalParam && ["consumer-wallet", "merchant-portal", "ops-console"].includes(portalParam)
+            ? portalParam
+            : "consumer-wallet"
+    );
+
+    const [mode, setMode] = useState<EnvironmentMode>("LIVE");
+
+    // Sync state with URL parameter if it changes
+    useEffect(() => {
+        if (portalParam && ["consumer-wallet", "merchant-portal", "ops-console"].includes(portalParam)) {
+            setActivePortal(portalParam);
+        }
+    }, [portalParam]);
+
+    const handleSelectPortal = (portal: PaymentPortalType) => {
+        setActivePortal(portal);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("portal", portal);
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 
     return (
-        <div className="max-w-6xl mx-auto flex flex-col gap-8">
-            {/* Header */}
-            <div>
-                <div className="flex items-center gap-2">
-                    <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">
-                        IoT Payment Gateway & Top-up
-                    </h1>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-mono">
-                        NFC DESFire EV3
-                    </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Direct cloud clearing payment gateway for transit cards, campus IDs & contactless tap balances.
-                </p>
-            </div>
+        <div className="w-full flex flex-col gap-6">
+            {/* Unified ApexPay Global Navigation Header */}
+            <ApexPayHeader
+                activePortal={activePortal}
+                onSelectPortal={handleSelectPortal}
+                mode={mode}
+                onToggleMode={setMode}
+            />
 
-            <div className="grid gap-8 grid-cols-1 lg:grid-cols-12 items-start">
-                {/* Left Column: Card Visualizer & Configuration (7 cols) */}
-                <div className="lg:col-span-7 flex flex-col gap-6">
-                    <SmartCardVisualizer
-                        card={card}
-                        amount={amount}
-                        projectedBalance={projectedBalance}
-                    />
-
-                    <AmountSelector
-                        presetAmounts={presetAmounts}
-                        selectedAmount={selectedAmount}
-                        customAmount={customAmount}
-                        onSelectPreset={handleSelectPreset}
-                        onCustomChange={handleCustomChange}
-                    />
-
-                    <PaymentChannelSelector
-                        paymentMethod={paymentMethod}
-                        onSelectMethod={setPaymentMethod}
-                    />
-                </div>
-
-                {/* Right Column: Order Summary & Clearing Trigger (5 cols) */}
-                <div className="lg:col-span-5 flex flex-col gap-6">
-                    <TransactionSummaryCard
-                        card={card}
-                        amount={amount}
-                        fee={fee}
-                        vat={vat}
-                        total={total}
-                        isProcessing={isProcessing}
-                        onConfirmTopUp={handleProcessTopUp}
-                    />
-                </div>
+            {/* Render Selected Portal Suite */}
+            <div className="w-full">
+                {activePortal === "consumer-wallet" && <ConsumerWalletView />}
+                {activePortal === "merchant-portal" && <MerchantPortalView />}
+                {activePortal === "ops-console" && <OpsConsoleView />}
             </div>
         </div>
     );
@@ -87,7 +61,9 @@ function PaymentGatewayView() {
 export function PaymentGatewayModule() {
     return (
         <PaymentGatewayProvider>
-            <PaymentGatewayView />
+            <Suspense fallback={<div className="p-8 text-center text-xs text-muted-foreground">Loading ApexPay Gateway Suite...</div>}>
+                <PaymentGatewayInner />
+            </Suspense>
         </PaymentGatewayProvider>
     );
 }

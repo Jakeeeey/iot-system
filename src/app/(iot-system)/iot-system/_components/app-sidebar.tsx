@@ -21,10 +21,24 @@ const IOT_FALLBACK_NAV: NavItem[] = [
         status: "active",
         items: [
             {
-                title: "Top-up & Checkout",
-                url: "/iot-system/payment-gateway",
-                slug: "checkout",
-                iconName: "CreditCard",
+                title: "Consumer Wallet",
+                url: "/iot-system/payment-gateway?portal=consumer-wallet",
+                slug: "consumer-wallet",
+                iconName: "Wallet",
+                status: "active",
+            },
+            {
+                title: "Merchant Portal",
+                url: "/iot-system/payment-gateway?portal=merchant-portal",
+                slug: "merchant-portal",
+                iconName: "Building2",
+                status: "active",
+            },
+            {
+                title: "Ops & Admin Console",
+                url: "/iot-system/payment-gateway?portal=ops-console",
+                slug: "ops-console",
+                iconName: "ShieldCheck",
                 status: "active",
             },
             {
