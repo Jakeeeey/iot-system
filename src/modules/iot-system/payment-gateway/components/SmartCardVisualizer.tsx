@@ -2,6 +2,7 @@
 
 import React from "react";
 import { SmartCardInfo } from "../types";
+import { PaymentIcon } from "./PaymentIcon";
 
 interface SmartCardVisualizerProps {
     card: SmartCardInfo;
@@ -14,7 +15,7 @@ export function SmartCardVisualizer({ card, amount, projectedBalance }: SmartCar
         <div className="relative overflow-hidden rounded-2xl p-6 sm:p-7 border border-[#163331] bg-gradient-to-br from-[#0A1C1B] via-[#0D2322] to-[#163331] text-white shadow-xl shadow-[#0A1C1B]/30">
             <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-[#D97706]/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute top-0 right-0 p-6 opacity-20">
-                <span className="material-symbols-outlined text-[72px] text-white">contactless</span>
+                <PaymentIcon name="contactless" className="w-16 h-16 text-white" />
             </div>
 
             <div className="relative z-10 flex flex-col justify-between h-48">

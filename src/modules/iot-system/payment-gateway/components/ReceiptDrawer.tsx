@@ -3,6 +3,7 @@
 import React from "react";
 import { WalletTransactionItem } from "../types";
 import { toast } from "sonner";
+import { PaymentIcon } from "./PaymentIcon";
 
 interface ReceiptDrawerProps {
     isOpen: boolean;
@@ -22,7 +23,7 @@ export function ReceiptDrawer({ isOpen, onClose, transaction }: ReceiptDrawerPro
     const handleShare = () => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(
-                `ApexPay Receipt: ${transaction.merchant} - ₱${Math.abs(transaction.amount).toFixed(2)} (${transaction.referenceCode})`
+                `Map-ePay Receipt: ${transaction.merchant} - ₱${Math.abs(transaction.amount).toFixed(2)} (${transaction.referenceCode})`
             );
         }
         toast.info("Receipt Link Copied", {
@@ -46,14 +47,14 @@ export function ReceiptDrawer({ isOpen, onClose, transaction }: ReceiptDrawerPro
                             onClick={onClose}
                             className="w-8 h-8 rounded-full flex items-center justify-center text-[#566C6A] hover:bg-[#EDF4F2] transition-colors cursor-pointer"
                         >
-                            <span className="material-symbols-outlined text-[20px]">close</span>
+                            <PaymentIcon name="close" className="w-5 h-5" />
                         </button>
                     </div>
 
                     {/* Receipt Card Container */}
                     <div className="bg-[#F4F7F6] rounded-2xl p-6 text-center relative overflow-hidden my-5 border border-[#D3DEDB]">
                         <div className="w-12 h-12 rounded-full bg-[#E8F5F1] text-[#059669] mx-auto flex items-center justify-center mb-3 border border-[#BCE3D6]">
-                            <span className="material-symbols-outlined text-[26px]">check_circle</span>
+                            <PaymentIcon name="check_circle" className="w-[26px] h-[26px]" />
                         </div>
                         <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#059669] block">
                             Payment Successfully Settled
@@ -109,7 +110,7 @@ export function ReceiptDrawer({ isOpen, onClose, transaction }: ReceiptDrawerPro
                         onClick={handleDownload}
                         className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white text-sm font-bold hover:brightness-105 transition-all flex items-center justify-center gap-2 shadow-sm shadow-[#D97706]/30 cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px]">download</span>
+                        <PaymentIcon name="download" className="w-[18px] h-[18px]" />
                         <span>Download PDF Receipt</span>
                     </button>
                     <button
@@ -117,7 +118,7 @@ export function ReceiptDrawer({ isOpen, onClose, transaction }: ReceiptDrawerPro
                         onClick={handleShare}
                         className="w-full py-2.5 rounded-xl bg-[#F4F7F6] text-[#0D2322] text-sm font-bold hover:bg-[#EDF4F2] transition-colors flex items-center justify-center gap-2 border border-[#D3DEDB] cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px] text-[#D97706]">share</span>
+                        <PaymentIcon name="share" className="w-[18px] h-[18px] text-[#D97706]" />
                         <span>Share Receipt Link</span>
                     </button>
                 </div>

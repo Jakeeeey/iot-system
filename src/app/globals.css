@@ -5,6 +5,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Google Material Symbols Font Definition */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
 /* ============================================================
    DESIGN TOKENS (LIGHT)
    - Slightly tinted app background for depth
@@ -463,10 +481,11 @@ html.dark .leaflet-tile-pane {
 }
 
 /* ============================================================
-   APEXPAY PAYMENT GATEWAY SUITE THEME TOKENS
+   MAP-EPAY PAYMENT GATEWAY SUITE THEME TOKENS
    Preserves Nordic Spruce (#0D2322) & Solar Amber (#D97706)
    on Porcelain (#F4F7F6) Canvas independently of system dark mode
    ============================================================ */
+.map-epay-portal,
 .apexpay-portal {
   --background: 168 6% 96%;
   --foreground: 177 46% 9%;
@@ -489,6 +508,7 @@ html.dark .leaflet-tile-pane {
   color: #0D2322 !important;
 }
 
+:is(.dark) .map-epay-portal,
 :is(.dark) .apexpay-portal {
   --background: 168 6% 96%;
   --foreground: 177 46% 9%;
@@ -510,11 +530,14 @@ html.dark .leaflet-tile-pane {
   color: #0D2322 !important;
 }
 
+.map-epay-portal .font-mono,
+.map-epay-portal [class*="font-mono"],
 .apexpay-portal .font-mono,
 .apexpay-portal [class*="font-mono"] {
   font-family: 'JetBrains Mono', monospace !important;
 }
 
+.map-epay-portal .material-symbols-outlined,
 .apexpay-portal .material-symbols-outlined {
   font-family: 'Material Symbols Outlined' !important;
   font-weight: normal;

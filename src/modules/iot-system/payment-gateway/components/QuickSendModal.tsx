@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
+import { PaymentIcon } from "./PaymentIcon";
 
 interface QuickSendModalProps {
     isOpen: boolean;
@@ -10,26 +11,15 @@ interface QuickSendModalProps {
     onSendSuccess?: (amount: number, recipient: string) => void;
 }
 
-export function QuickSendModal({
-    isOpen,
+function QuickSendModalContent({
     onClose,
     initialPayee = "",
     onSendSuccess,
-}: QuickSendModalProps) {
+}: Omit<QuickSendModalProps, "isOpen">) {
     const [recipient, setRecipient] = useState(initialPayee);
     const [amount, setAmount] = useState("");
     const [note, setNote] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            setRecipient(initialPayee);
-            setAmount("");
-            setNote("");
-        }
-    }, [isOpen, initialPayee]);
-
-    if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,7 +65,7 @@ export function QuickSendModal({
                         onClick={onClose}
                         className="w-8 h-8 rounded-full flex items-center justify-center text-[#566C6A] hover:bg-[#F4F7F6] transition-colors cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[20px]">close</span>
+                        <PaymentIcon name="close" className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -85,7 +75,7 @@ export function QuickSendModal({
                             To Recipient
                         </label>
                         <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-[#566C6A]">person</span>
+                            <PaymentIcon name="person" className="absolute left-3.5 top-3 w-[18px] h-[18px] text-[#566C6A]" />
                             <input
                                 type="text"
                                 value={recipient}
@@ -157,7 +147,7 @@ export function QuickSendModal({
                             disabled={isSubmitting}
                             className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white font-bold text-sm hover:brightness-105 transition-all shadow-md shadow-[#D97706]/30 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                         >
-                            <span className="material-symbols-outlined text-[18px]">send</span>
+                            <PaymentIcon name="send" className="w-[18px] h-[18px]" />
                             <span>{isSubmitting ? "Transferring..." : "Confirm & Send"}</span>
                         </button>
                     </div>
@@ -165,4 +155,9 @@ export function QuickSendModal({
             </div>
         </div>
     );
+}
+
+export function QuickSendModal(props: QuickSendModalProps) {
+    if (!props.isOpen) return null;
+    return <QuickSendModalContent {...props} />;
 }

@@ -3,6 +3,7 @@
 import React from "react";
 import { PaymentMethod } from "../types";
 import { PAYMENT_CHANNELS } from "../services/payment-gateway.service";
+import { PaymentIcon } from "./PaymentIcon";
 
 interface PaymentChannelSelectorProps {
     paymentMethod: PaymentMethod;
@@ -24,20 +25,20 @@ export function PaymentChannelSelector({
         if (id === "gcash") {
             return (
                 <div className="h-9 w-9 rounded-xl bg-[#FFF7ED] border border-[#FED7AA] flex items-center justify-center text-[#D97706] shrink-0 font-bold text-xs">
-                    <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
+                    <PaymentIcon name="qr_code_2" className="w-4 h-4 text-[#D97706]" />
                 </div>
             );
         }
         if (id === "card") {
             return (
                 <div className="h-9 w-9 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB] flex items-center justify-center text-[#0D2322] shrink-0">
-                    <span className="material-symbols-outlined text-[18px]">credit_card</span>
+                    <PaymentIcon name="credit_card" className="w-4 h-4 text-[#0D2322]" />
                 </div>
             );
         }
         return (
             <div className="h-9 w-9 rounded-xl bg-[#FFF7ED] border border-[#FED7AA] flex items-center justify-center text-[#D97706] shrink-0">
-                <span className="material-symbols-outlined text-[18px]">account_balance</span>
+                <PaymentIcon name="account_balance" className="w-4 h-4 text-[#D97706]" />
             </div>
         );
     };

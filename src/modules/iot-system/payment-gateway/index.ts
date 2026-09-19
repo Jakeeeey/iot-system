@@ -3,6 +3,7 @@ export * from "./services/payment-gateway.service";
 export * from "./hooks/usePaymentGateway";
 export * from "./providers/PaymentGatewayProvider";
 export * from "./PaymentGatewayModule";
+export * from "./components/MapEPayHeader";
 export * from "./components/ApexPayHeader";
 export * from "./components/ConsumerWalletView";
 export * from "./components/MerchantPortalView";

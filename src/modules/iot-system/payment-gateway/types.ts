@@ -41,7 +41,7 @@ export interface SmartCardInfo {
 }
 
 // ==========================================
-// ApexPay Portal & Multi-View Types
+// Map-ePay Portal & Multi-View Types
 // ==========================================
 
 export type PaymentPortalType = "consumer-wallet" | "merchant-portal" | "ops-console";

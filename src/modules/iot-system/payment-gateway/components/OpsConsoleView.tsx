@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { PaymentIcon } from "./PaymentIcon";
 
 export function OpsConsoleView() {
     // Live ticking settlement cutoff clock
@@ -62,7 +63,7 @@ export function OpsConsoleView() {
                 {/* Quick Action / Security Timestamp */}
                 <div className="flex items-center gap-3 self-start xl:self-auto">
                     <div className="px-4 py-2 bg-white rounded-xl border border-[#D3DEDB] shadow-sm flex items-center gap-3">
-                        <span className="material-symbols-outlined text-[20px] text-[#D97706]">schedule</span>
+                        <PaymentIcon name="schedule" className="w-5 h-5 text-[#D97706]" />
                         <div className="flex flex-col">
                             <span className="text-[10px] text-[#526B68] uppercase tracking-wider font-semibold">
                                 Settlement Cutoff
@@ -77,7 +78,7 @@ export function OpsConsoleView() {
                         onClick={handleSignSessionToken}
                         className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-[#E07A1F] via-[#D97706] to-[#B45309] text-white hover:opacity-95 transition-all shadow-[0_4px_14px_rgba(217,119,6,0.35)] font-semibold text-xs sm:text-sm cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                        <PaymentIcon name="verified_user" className="w-[18px] h-[18px]" />
                         <span>Sign Session Token</span>
                     </button>
                 </div>
@@ -92,7 +93,7 @@ export function OpsConsoleView() {
                             Core Switch Throughput
                         </span>
                         <div className="w-8 h-8 rounded-lg bg-[#E1EAE9] flex items-center justify-center text-[#0D2322]">
-                            <span className="material-symbols-outlined text-[18px]">speed</span>
+                            <PaymentIcon name="speed" className="w-[18px] h-[18px]" />
                         </div>
                     </div>
                     <div className="my-2">
@@ -102,7 +103,7 @@ export function OpsConsoleView() {
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="inline-flex items-center text-[#526B68] text-[11px] font-bold bg-[#EDF5F5] px-1.5 py-0.5 rounded">
-                                <span className="material-symbols-outlined text-[14px]">horizontal_rule</span> 0.0%
+                                <PaymentIcon name="horizontal_rule" className="w-3.5 h-3.5" /> 0.0%
                             </span>
                             <span className="text-[#526B68] text-xs">vs baseline</span>
                         </div>
@@ -121,7 +122,7 @@ export function OpsConsoleView() {
                             24h Settlement Float Pool
                         </span>
                         <div className="w-8 h-8 rounded-lg bg-[#E8F8F3] flex items-center justify-center text-[#059669]">
-                            <span className="material-symbols-outlined text-[18px]">account_balance</span>
+                            <PaymentIcon name="account_balance" className="w-[18px] h-[18px]" />
                         </div>
                     </div>
                     <div className="my-2">
@@ -149,7 +150,7 @@ export function OpsConsoleView() {
                             Network Health Alerts
                         </span>
                         <div className="w-8 h-8 rounded-lg bg-[#E1EAE9] flex items-center justify-center text-[#0D2322]">
-                            <span className="material-symbols-outlined text-[18px]">notifications_active</span>
+                            <PaymentIcon name="notifications_active" className="w-[18px] h-[18px]" />
                         </div>
                     </div>
                     <div className="my-2">
@@ -179,7 +180,7 @@ export function OpsConsoleView() {
                         <span className="text-[11px] uppercase tracking-wider font-bold text-[#FEF3C7]">
                             Dynamic Spot Feeder
                         </span>
-                        <span className="material-symbols-outlined text-[20px] text-[#FEF3C7]">currency_exchange</span>
+                        <PaymentIcon name="currency_exchange" className="w-5 h-5 text-[#FEF3C7]" />
                     </div>
                     <div className="my-2 relative z-10">
                         <div className="flex items-baseline justify-between">
@@ -326,7 +327,7 @@ export function OpsConsoleView() {
                         <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2">
                                 <div className="w-9 h-9 rounded-xl bg-[#E1EAE9] flex items-center justify-center text-[#0D2322]">
-                                    <span className="material-symbols-outlined text-[22px]">how_to_reg</span>
+                                    <PaymentIcon name="how_to_reg" className="w-[22px] h-[22px]" />
                                 </div>
                                 <div>
                                     <h2 className="text-base font-bold text-[#0D2322]">Dual-Control Ledger Adjustment</h2>
@@ -340,7 +341,7 @@ export function OpsConsoleView() {
 
                         {/* Empty Queue State */}
                         <div className="rounded-xl bg-[#EDF5F5] border border-[#D3DEDB] p-8 flex flex-col items-center justify-center text-center gap-2">
-                            <span className="material-symbols-outlined text-[36px] text-[#8B9F9D]">assignment_turned_in</span>
+                            <PaymentIcon name="assignment_turned_in" className="w-9 h-9 text-[#8B9F9D]" />
                             <p className="font-semibold text-sm text-[#0D2322]">No Pending Adjustments</p>
                             <p className="text-xs text-[#566C6A] max-w-md">The dual-control Maker-Checker multi-sig queue is clear. No journal entries require second officer sign-off or broadcast.</p>
                         </div>
@@ -351,7 +352,7 @@ export function OpsConsoleView() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                                 <div className="w-9 h-9 rounded-xl bg-[#E8F8F3] flex items-center justify-center text-[#059669]">
-                                    <span className="material-symbols-outlined text-[22px]">shield</span>
+                                    <PaymentIcon name="shield" className="w-[22px] h-[22px]" />
                                 </div>
                                 <div>
                                     <h2 className="text-base font-bold text-[#0D2322]">AML &amp; Sanctions Intercept Queue</h2>
@@ -365,7 +366,7 @@ export function OpsConsoleView() {
 
                         {/* Empty AML Queue */}
                         <div className="p-8 rounded-xl bg-[#EDF5F5] border border-[#D3DEDB] flex flex-col items-center justify-center text-center gap-2">
-                            <span className="material-symbols-outlined text-[36px] text-[#059669]">verified_user</span>
+                            <PaymentIcon name="verified_user" className="w-9 h-9 text-[#059669]" />
                             <p className="font-semibold text-sm text-[#0D2322]">All Clear: No AML or Sanctions Intercepts</p>
                             <p className="text-xs text-[#566C6A] max-w-md">No covered threshold (&gt;₱500K), PEP screening hits, or structuring alerts detected.</p>
                         </div>
@@ -379,7 +380,7 @@ export function OpsConsoleView() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-9 h-9 rounded-xl bg-[#E1EAE9] flex items-center justify-center text-[#0D2322]">
-                                    <span className="material-symbols-outlined text-[22px]">gavel</span>
+                                    <PaymentIcon name="gavel" className="w-[22px] h-[22px]" />
                                 </div>
                                 <div>
                                     <h2 className="text-base font-bold text-[#0D2322]">Dispute Adjudication Hub</h2>
@@ -393,7 +394,7 @@ export function OpsConsoleView() {
 
                         {/* Empty Case State */}
                         <div className="rounded-xl bg-[#EDF5F5] border border-[#D3DEDB] p-8 flex flex-col items-center justify-center text-center gap-2">
-                            <span className="material-symbols-outlined text-[36px] text-[#8B9F9D]">gavel</span>
+                            <PaymentIcon name="gavel" className="w-9 h-9 text-[#8B9F9D]" />
                             <p className="font-semibold text-sm text-[#0D2322]">No Open Adjudication Cases</p>
                             <p className="text-xs text-[#566C6A] max-w-sm">No cardholder chargebacks or merchant reserve locks currently require institutional arbiter disposition.</p>
                         </div>
@@ -404,7 +405,7 @@ export function OpsConsoleView() {
                         <div className="flex items-center justify-between pb-1">
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-[#E1EAE9] flex items-center justify-center text-[#0D2322]">
-                                    <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                                    <PaymentIcon name="receipt_long" className="w-[18px] h-[18px]" />
                                 </div>
                                 <h3 className="text-sm font-bold text-[#0D2322]">Administrative Audit Tape</h3>
                             </div>
@@ -421,7 +422,7 @@ export function OpsConsoleView() {
                                     <span className="text-xs truncate font-bold text-[#0D2322] font-mono">GATEWAY_ENCLAVE_ACTIVE</span>
                                     <span className="text-[#526B68] text-xs truncate">• Secure enclave operational on host node</span>
                                 </div>
-                                <span className="material-symbols-outlined text-[16px] text-[#059669] shrink-0 ml-2">check_circle</span>
+                                <PaymentIcon name="check_circle" className="w-4 h-4 text-[#059669] shrink-0 ml-2" />
                             </div>
 
                             <div className="p-2.5 rounded-xl bg-[#EDF5F5] border border-[#D3DEDB] flex items-center justify-between text-[#0D2322]">
@@ -430,7 +431,7 @@ export function OpsConsoleView() {
                                     <span className="text-xs truncate font-bold text-[#0D2322] font-mono">HSM_KEY_VALIDATED</span>
                                     <span className="text-[#526B68] text-xs truncate">• Hardware Security Module session key confirmed</span>
                                 </div>
-                                <span className="material-symbols-outlined text-[16px] text-[#059669] shrink-0 ml-2">check_circle</span>
+                                <PaymentIcon name="check_circle" className="w-4 h-4 text-[#059669] shrink-0 ml-2" />
                             </div>
 
                             <div className="p-2.5 rounded-xl bg-[#EDF5F5] border border-[#D3DEDB] flex items-center justify-between text-[#0D2322]">
@@ -439,7 +440,7 @@ export function OpsConsoleView() {
                                     <span className="text-xs truncate font-bold text-[#0D2322] font-mono">RULESET_SYNCHRONIZED</span>
                                     <span className="text-[#526B68] text-xs truncate">• AMLC threshold and sanction lists updated</span>
                                 </div>
-                                <span className="material-symbols-outlined text-[16px] text-[#059669] shrink-0 ml-2">check_circle</span>
+                                <PaymentIcon name="check_circle" className="w-4 h-4 text-[#059669] shrink-0 ml-2" />
                             </div>
 
                             <div className="p-2.5 rounded-xl bg-[#EDF5F5] border border-[#D3DEDB] flex items-center justify-between text-[#0D2322]">
@@ -448,7 +449,7 @@ export function OpsConsoleView() {
                                     <span className="text-xs truncate font-bold text-[#0D2322] font-mono">TELEMETRY_HEARTBEAT</span>
                                     <span className="text-[#526B68] text-xs truncate">• Nominal status report from MNL-CENTRAL-01</span>
                                 </div>
-                                <span className="material-symbols-outlined text-[16px] text-[#059669] shrink-0 ml-2">check_circle</span>
+                                <PaymentIcon name="check_circle" className="w-4 h-4 text-[#059669] shrink-0 ml-2" />
                             </div>
                         </div>
 
@@ -460,7 +461,7 @@ export function OpsConsoleView() {
                                 className="text-[#D97706] hover:text-[#B45309] font-bold hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 <span>Export ISO-20022 Audit Zip</span>
-                                <span className="material-symbols-outlined text-[14px]">download</span>
+                                <PaymentIcon name="download" className="w-3.5 h-3.5" />
                             </button>
                         </div>
                     </div>
@@ -471,7 +472,7 @@ export function OpsConsoleView() {
             <div className="rounded-2xl bg-gradient-to-r from-[#E1EAE9] via-white to-[#E1EAE9] border border-[#D3DEDB] p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-11 h-11 rounded-xl bg-[#0D2322] text-white flex items-center justify-center shadow-md shadow-[#0D2322]/20">
-                        <span className="material-symbols-outlined text-[24px] text-[#D97706]">verified</span>
+                        <PaymentIcon name="verified" className="w-6 h-6 text-[#D97706]" />
                     </div>
                     <div>
                         <h4 className="text-sm font-bold text-[#0D2322]">Bangko Sentral ng Pilipinas (BSP) Circular 982 Compliance Verified</h4>
@@ -480,11 +481,11 @@ export function OpsConsoleView() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs px-3 py-1.5 rounded-xl bg-white text-[#0D2322] font-bold border border-[#D3DEDB] shadow-sm flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[#0D2322] text-[16px]">lock</span>
+                        <PaymentIcon name="lock" className="text-[#0D2322] w-4 h-4" />
                         <span>SOC2 Type II Attested</span>
                     </span>
                     <span className="text-xs px-3 py-1.5 rounded-xl bg-white text-[#0D2322] font-bold border border-[#D3DEDB] shadow-sm flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[#0D2322] text-[16px]">security</span>
+                        <PaymentIcon name="security" className="text-[#0D2322] w-4 h-4" />
                         <span>PCI-DSS Level 1 v4.0</span>
                     </span>
                 </div>

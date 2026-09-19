@@ -3,15 +3,15 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { MerchantLedgerTransaction } from "../types";
+import { PaymentIcon } from "./PaymentIcon";
 
 const INITIAL_MERCHANT_LEDGER: MerchantLedgerTransaction[] = [];
 
 export function MerchantPortalView() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [disputeSubmitted, setDisputeSubmitted] = useState(false);
 
     const handleCreateLink = () => {
-        const link = `https://pay.apexpay.ph/checkout/${Math.random().toString(36).substring(2, 9)}`;
+        const link = `https://pay.map-epay.ph/checkout/${Math.random().toString(36).substring(2, 9)}`;
         if (navigator.clipboard) {
             navigator.clipboard.writeText(link);
         }
@@ -34,14 +34,7 @@ export function MerchantPortalView() {
 
     const handleSoundboxAlert = () => {
         toast.info("Soundbox Voice Broadcast Tested", {
-            description: "Speaker announcement sent: 'ApexPay received payment of ₱2,500.00'.",
-        });
-    };
-
-    const handleSubmitEvidence = () => {
-        setDisputeSubmitted(true);
-        toast.success("POD Evidence Submitted", {
-            description: "Proof of delivery uploaded for Dispute #DS-99042-VISA. Issuer notified.",
+            description: "Speaker announcement sent: 'Map-ePay received payment of ₱2,500.00'.",
         });
     };
 
@@ -93,7 +86,7 @@ export function MerchantPortalView() {
                         onClick={handleCreateLink}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#D97706] text-white text-xs hover:bg-[#B45309] transition-all shadow-sm shadow-[#D97706]/25 font-semibold cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px]">add_link</span>
+                        <PaymentIcon name="add_link" className="w-[18px] h-[18px]" />
                         <span>Dynamic Link / Invoice</span>
                     </button>
                     <button
@@ -101,7 +94,7 @@ export function MerchantPortalView() {
                         onClick={handleBirForm}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#EDF4F2] text-[#0D2322] text-xs hover:bg-[#E2EBE9] transition-colors border border-[#D3DEDB] font-medium cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px] text-[#0D2322]">receipt</span>
+                        <PaymentIcon name="receipt" className="w-[18px] h-[18px] text-[#0D2322]" />
                         <span>BIR 2307 Tax Form</span>
                     </button>
                     <button
@@ -109,7 +102,7 @@ export function MerchantPortalView() {
                         onClick={handleBatchPayout}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#EDF4F2] text-[#0D2322] text-xs hover:bg-[#E2EBE9] transition-colors border border-[#D3DEDB] font-medium cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px] text-[#0D2322]">payments</span>
+                        <PaymentIcon name="payments" className="w-[18px] h-[18px] text-[#0D2322]" />
                         <span>Batch Payroll Payout</span>
                     </button>
                     <button
@@ -117,7 +110,7 @@ export function MerchantPortalView() {
                         onClick={handleSoundboxAlert}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#EDF4F2] text-[#0D2322] text-xs hover:bg-[#E2EBE9] transition-colors border border-[#D3DEDB] font-medium cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[18px] text-[#0D2322]">volume_up</span>
+                        <PaymentIcon name="volume_up" className="w-[18px] h-[18px] text-[#0D2322]" />
                         <span>Soundbox Alerts</span>
                     </button>
                 </div>
@@ -128,9 +121,9 @@ export function MerchantPortalView() {
                 {/* Metric 1 */}
                 <div className="bg-white rounded-xl p-5 shadow-sm border border-[#D3DEDB] flex flex-col justify-between hover:border-[#0D2322]/30 transition-all">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] text-[#566C6A] uppercase tracking-wider font-semibold">Today's Gross Volume</span>
+                        <span className="text-[11px] text-[#566C6A] uppercase tracking-wider font-semibold">Today&apos;s Gross Volume</span>
                         <div className="flex items-center gap-1 text-[#566C6A] text-[11px] bg-[#EDF4F2] px-1.5 py-0.5 rounded font-bold border border-[#D3DEDB]">
-                            <span className="material-symbols-outlined text-[14px]">horizontal_rule</span>
+                            <PaymentIcon name="horizontal_rule" className="w-3.5 h-3.5" />
                             <span>0.0%</span>
                         </div>
                     </div>
@@ -183,7 +176,7 @@ export function MerchantPortalView() {
                             <span className="text-[#566C6A] text-lg font-semibold font-sans">/ 0 Units</span>
                         </div>
                         <div className="flex items-center gap-1 mt-1 text-[#566C6A] text-xs font-medium">
-                            <span className="material-symbols-outlined text-[14px]">sensors</span>
+                            <PaymentIcon name="sensors" className="w-3.5 h-3.5" />
                             <span>Fleet Standby • No active nodes</span>
                         </div>
                     </div>
@@ -235,7 +228,7 @@ export function MerchantPortalView() {
                         <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center text-xs">
                                 <span className="flex items-center gap-1.5 text-[#0D2322] font-semibold">
-                                    <span className="material-symbols-outlined text-[#D97706] text-[18px]">qr_code_scanner</span>
+                                    <PaymentIcon name="qr_code_scanner" className="text-[#D97706] w-[18px] h-[18px]" />
                                     QR Ph National Rails (P2M)
                                 </span>
                                 <span className="text-[#0D2322] font-bold">
@@ -251,7 +244,7 @@ export function MerchantPortalView() {
                         <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center text-xs">
                                 <span className="flex items-center gap-1.5 text-[#0D2322] font-semibold">
-                                    <span className="material-symbols-outlined text-[#163331] text-[18px]">contactless</span>
+                                    <PaymentIcon name="contactless" className="text-[#163331] w-[18px] h-[18px]" />
                                     Contactless EMV (Visa / MC / JCB)
                                 </span>
                                 <span className="text-[#0D2322] font-bold">
@@ -267,7 +260,7 @@ export function MerchantPortalView() {
                         <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center text-xs">
                                 <span className="flex items-center gap-1.5 text-[#0D2322] font-semibold">
-                                    <span className="material-symbols-outlined text-[#F59E0B] text-[18px]">shopping_cart_checkout</span>
+                                    <PaymentIcon name="shopping_cart_checkout" className="text-[#F59E0B] w-[18px] h-[18px]" />
                                     E-Commerce Hosted Checkout API
                                 </span>
                                 <span className="text-[#0D2322] font-bold">
@@ -283,7 +276,7 @@ export function MerchantPortalView() {
                         <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center text-xs">
                                 <span className="flex items-center gap-1.5 text-[#0D2322] font-semibold">
-                                    <span className="material-symbols-outlined text-[#566C6A] text-[18px]">store</span>
+                                    <PaymentIcon name="store" className="text-[#566C6A] w-[18px] h-[18px]" />
                                     Over-The-Counter Cash Voucher
                                 </span>
                                 <span className="text-[#0D2322] font-bold">
@@ -316,7 +309,7 @@ export function MerchantPortalView() {
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 rounded-lg bg-[#E8F5F1] text-[#0F5B46] flex items-center justify-center shrink-0 border border-[#BCE3D6]">
-                                    <span className="material-symbols-outlined text-[24px]">verified_user</span>
+                                    <PaymentIcon name="verified_user" className="w-6 h-6" />
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
@@ -335,7 +328,7 @@ export function MerchantPortalView() {
                             </div>
                             <div className="flex flex-col items-end shrink-0 w-full md:w-auto">
                                 <div className="flex items-center gap-1.5 text-[#0F5B46] font-bold text-xs">
-                                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                    <PaymentIcon name="check_circle" className="w-[18px] h-[18px]" />
                                     <span>Dispute Rate: 0.00%</span>
                                 </div>
                                 <button
@@ -367,8 +360,8 @@ export function MerchantPortalView() {
                             <div className="p-4 rounded-xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col justify-between gap-2 hover:border-[#0D2322]/40 transition-all">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#0D2322] text-[20px]">point_of_sale</span>
-                                        <span className="text-sm text-[#0D2322] font-bold">Apex Hybrid Pro</span>
+                                        <PaymentIcon name="point_of_sale" className="text-[#0D2322] w-5 h-5" />
+                                        <span className="text-sm text-[#0D2322] font-bold">Map-ePay Hybrid Pro</span>
                                     </div>
                                     <span className="px-1.5 py-0.5 rounded-md bg-[#EDF4F2] text-[#566C6A] border border-[#D3DEDB] text-[11px] font-bold">
                                         0 Online
@@ -377,7 +370,7 @@ export function MerchantPortalView() {
                                 <p className="text-xs text-[#566C6A]">Dual Chip + NFC Contactless + Fallback Magstripe</p>
                                 <div className="flex items-center justify-between text-[11px] text-[#566C6A]">
                                     <span className="flex items-center gap-1 font-medium">
-                                        <span className="material-symbols-outlined text-[14px] text-[#8B9F9D]">battery_charging_full</span>
+                                        <PaymentIcon name="battery_charging_full" className="w-3.5 h-3.5 text-[#8B9F9D]" />
                                         Standby
                                     </span>
                                     <span className="font-semibold text-[#8B9F9D] font-mono">v4.1.2-PCI</span>
@@ -388,8 +381,8 @@ export function MerchantPortalView() {
                             <div className="p-4 rounded-xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col justify-between gap-2 hover:border-[#0D2322]/40 transition-all">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#D97706] text-[20px]">speaker_phone</span>
-                                        <span className="text-sm text-[#0D2322] font-bold">Apex Soundbox Q1</span>
+                                        <PaymentIcon name="speaker_phone" className="text-[#D97706] w-5 h-5" />
+                                        <span className="text-sm text-[#0D2322] font-bold">Map-ePay Soundbox Q1</span>
                                     </div>
                                     <span className="px-1.5 py-0.5 rounded-md bg-[#EDF4F2] text-[#566C6A] border border-[#D3DEDB] text-[11px] font-bold">
                                         0 Online
@@ -398,7 +391,7 @@ export function MerchantPortalView() {
                                 <p className="text-xs text-[#566C6A]">Voice payment alert broadcast with 4G dual-SIM failover</p>
                                 <div className="flex items-center justify-between text-[11px] text-[#566C6A]">
                                     <span className="flex items-center gap-1 font-medium">
-                                        <span className="material-symbols-outlined text-[14px] text-[#8B9F9D]">wifi</span>
+                                        <PaymentIcon name="wifi" className="w-3.5 h-3.5 text-[#8B9F9D]" />
                                         Standby
                                     </span>
                                     <span className="font-semibold text-[#8B9F9D] font-mono">v2.0.8-Audio</span>
@@ -409,7 +402,7 @@ export function MerchantPortalView() {
                             <div className="p-4 rounded-xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col justify-between gap-2 hover:border-[#0D2322]/40 transition-all">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#163331] text-[20px]">devices</span>
+                                        <PaymentIcon name="devices" className="text-[#163331] w-5 h-5" />
                                         <span className="text-sm text-[#0D2322] font-bold">Mobile Cashier mPOS</span>
                                     </div>
                                     <span className="px-1.5 py-0.5 rounded-md bg-[#EDF4F2] text-[#566C6A] border border-[#D3DEDB] text-[11px] font-bold">
@@ -419,7 +412,7 @@ export function MerchantPortalView() {
                                 <p className="text-xs text-[#566C6A]">Handheld queue-busting floor checkout units</p>
                                 <div className="flex items-center justify-between text-[11px] text-[#566C6A]">
                                     <span className="flex items-center gap-1 text-[#566C6A] font-semibold">
-                                        <span className="material-symbols-outlined text-[14px]">system_update</span>
+                                        <PaymentIcon name="system_update" className="w-3.5 h-3.5" />
                                         Standby
                                     </span>
                                     <span className="font-semibold text-[#8B9F9D] font-mono">v5.2.0-Patch</span>
@@ -439,7 +432,7 @@ export function MerchantPortalView() {
                                 className="text-xs text-[#D97706] font-bold hover:text-[#B45309] transition-colors flex items-center gap-1 cursor-pointer"
                             >
                                 <span>Open Hardware Diagnostics Panel</span>
-                                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                <PaymentIcon name="arrow_forward" className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -458,7 +451,7 @@ export function MerchantPortalView() {
                     {/* Filters & Instant Search */}
                     <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                         <div className="relative flex-1 sm:w-64">
-                            <span className="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#566C6A]">search</span>
+                            <PaymentIcon name="search" className="absolute left-3 top-2.5 w-[18px] h-[18px] text-[#566C6A]" />
                             <input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -472,7 +465,7 @@ export function MerchantPortalView() {
                             onClick={() => toast.info("Filter Rails", { description: "QR Ph, Visa, Mastercard, and Maya filters active." })}
                             className="px-3 py-2 bg-[#EDF4F2] text-[#0D2322] text-xs rounded-lg flex items-center gap-1.5 hover:bg-[#E2EBE9] transition-colors border border-[#D3DEDB] font-semibold cursor-pointer"
                         >
-                            <span className="material-symbols-outlined text-[18px] text-[#0D2322]">filter_list</span>
+                            <PaymentIcon name="filter_list" className="w-[18px] h-[18px] text-[#0D2322]" />
                             <span>Filter Rails</span>
                         </button>
                         <button
@@ -480,7 +473,7 @@ export function MerchantPortalView() {
                             onClick={handleExportCsv}
                             className="px-3 py-2 bg-[#EDF4F2] text-[#0D2322] text-xs rounded-lg flex items-center gap-1.5 hover:bg-[#E2EBE9] transition-colors border border-[#D3DEDB] font-semibold cursor-pointer"
                         >
-                            <span className="material-symbols-outlined text-[18px] text-[#0D2322]">file_download</span>
+                            <PaymentIcon name="file_download" className="w-[18px] h-[18px] text-[#0D2322]" />
                             <span>Export CSV</span>
                         </button>
                     </div>
@@ -505,7 +498,7 @@ export function MerchantPortalView() {
                                 <tr>
                                     <td colSpan={7} className="py-12 text-center text-[#566C6A]">
                                         <div className="flex flex-col items-center justify-center gap-2">
-                                            <span className="material-symbols-outlined text-[36px] text-[#8B9F9D]">receipt_long</span>
+                                            <PaymentIcon name="receipt_long" className="w-9 h-9 text-[#8B9F9D]" />
                                             <p className="font-semibold text-sm text-[#0D2322]">No Store Transactions Found</p>
                                             <p className="text-xs text-[#566C6A]">Transactions processed through POS terminals and checkout links will appear here.</p>
                                         </div>
@@ -533,9 +526,10 @@ export function MerchantPortalView() {
                                         </td>
                                         <td className="px-4 py-2">
                                             <div className="flex items-center gap-1.5">
-                                                <span className="material-symbols-outlined text-[18px] text-[#D97706]">
-                                                    {tx.railMethod.includes("QR") ? "qr_code_2" : tx.railMethod.includes("Maya") ? "shopping_bag" : "contactless"}
-                                                </span>
+                                                <PaymentIcon
+                                                    name={tx.railMethod.includes("QR") ? "qr_code_2" : tx.railMethod.includes("Maya") ? "shopping_bag" : "contactless"}
+                                                    className="w-[18px] h-[18px] text-[#D97706]"
+                                                />
                                                 <span className="text-xs text-[#0D2322] font-medium">{tx.railMethod}</span>
                                             </div>
                                         </td>

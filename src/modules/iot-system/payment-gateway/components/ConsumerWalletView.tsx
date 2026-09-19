@@ -10,6 +10,7 @@ import { AmountSelector } from "./AmountSelector";
 import { PaymentChannelSelector } from "./PaymentChannelSelector";
 import { TransactionSummaryCard } from "./TransactionSummaryCard";
 import { usePaymentGatewayContext } from "../providers/PaymentGatewayProvider";
+import { PaymentIcon } from "./PaymentIcon";
 
 const INITIAL_TRANSACTIONS: WalletTransactionItem[] = [];
 
@@ -37,8 +38,9 @@ export function ConsumerWalletView() {
     const [activeTab, setActiveTab] = useState<"overview" | "send" | "bills" | "savings" | "cards">("overview");
     const [balanceVisible, setBalanceVisible] = useState(true);
 
-    const [cvvDisplay, setCvvDisplay] = useState("•••");
+    const [cvvCode, setCvvCode] = useState("•••");
     const [cvvSecondsLeft, setCvvSecondsLeft] = useState(0);
+    const cvvDisplay = cvvSecondsLeft > 0 ? cvvCode : "•••";
 
     const [cardSettings, setCardSettings] = useState<CardSecuritySettings>({
         isFrozen: false,
@@ -60,19 +62,12 @@ export function ConsumerWalletView() {
     const [splitTotal, setSplitTotal] = useState("0");
     const [splitPeople] = useState(4);
 
-    const [emergencyFund, setEmergencyFund] = useState(0);
-    const [tokyoTrip, setTokyoTrip] = useState(0);
-    const [autoRoundUpActive, setAutoRoundUpActive] = useState(false);
-
     const spendableBalance = card.balance;
     const vaultBalance = 0;
     const totalNetWorth = spendableBalance + vaultBalance;
 
     useEffect(() => {
-        if (cvvSecondsLeft <= 0) {
-            setCvvDisplay("•••");
-            return;
-        }
+        if (cvvSecondsLeft <= 0) return;
         const timer = setInterval(() => {
             setCvvSecondsLeft((prev) => prev - 1);
         }, 1000);
@@ -81,7 +76,7 @@ export function ConsumerWalletView() {
 
     const handleRevealCvv = () => {
         const randCvv = Math.floor(100 + Math.random() * 900).toString();
-        setCvvDisplay(randCvv);
+        setCvvCode(randCvv);
         setCvvSecondsLeft(60);
         toast.success("Dynamic CVV Generated", {
             description: `CVV ${randCvv} is valid for 60 seconds.`,
@@ -132,7 +127,7 @@ export function ConsumerWalletView() {
                         <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0D2322]">
                             Welcome, Account Holder
                         </span>
-                        <span className="material-symbols-outlined text-[#D97706] text-[24px]">verified</span>
+                        <PaymentIcon name="verified" className="text-[#D97706] w-6 h-6" />
                     </div>
                     <p className="text-xs sm:text-sm text-[#566C6A] mt-0.5">
                         Everyday financial and smart card top-up portal.
@@ -141,7 +136,7 @@ export function ConsumerWalletView() {
 
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F5F1] text-[#047857] border border-[#A7F3D0] shadow-xs text-xs font-bold">
-                        <span className="material-symbols-outlined text-[16px] text-[#047857]">shield</span>
+                        <PaymentIcon name="shield" className="w-4 h-4 text-[#047857]" />
                         <span>PDIC Insured up to ₱500,000</span>
                     </div>
 
@@ -158,7 +153,7 @@ export function ConsumerWalletView() {
                             className="hover:text-[#D97706] transition-colors cursor-pointer"
                             title="Copy Account Number"
                         >
-                            <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                            <PaymentIcon name="content_copy" className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -176,7 +171,7 @@ export function ConsumerWalletView() {
                                 : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+                        <PaymentIcon name="account_balance_wallet" className="w-5 h-5" />
                         <span>Overview & Balance</span>
                     </button>
 
@@ -189,7 +184,7 @@ export function ConsumerWalletView() {
                                 : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">send_money</span>
+                        <PaymentIcon name="send_money" className="w-5 h-5" />
                         <span>Send & Request (P2P / QR Ph)</span>
                     </button>
 
@@ -202,7 +197,7 @@ export function ConsumerWalletView() {
                                 : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">receipt</span>
+                        <PaymentIcon name="receipt" className="w-5 h-5" />
                         <span>Bills & Utilities</span>
                     </button>
 
@@ -215,7 +210,7 @@ export function ConsumerWalletView() {
                                 : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">savings</span>
+                        <PaymentIcon name="savings" className="w-5 h-5" />
                         <span>Savings Pockets</span>
                         <span className="ml-1 px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#047857] text-[10px] font-bold border border-[#A7F3D0]">
                             4.5% APY
@@ -231,7 +226,7 @@ export function ConsumerWalletView() {
                                 : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">credit_card</span>
+                        <PaymentIcon name="credit_card" className="w-5 h-5" />
                         <span>Cards & Security</span>
                     </button>
                 </div>
@@ -248,16 +243,17 @@ export function ConsumerWalletView() {
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs uppercase tracking-wider font-bold text-[#566C6A]">
-                                        Total Net Worth across ApexPay
+                                        Total Net Worth across Map-ePay
                                     </span>
                                     <button
                                         type="button"
                                         onClick={() => setBalanceVisible(!balanceVisible)}
                                         className="p-1 rounded-md text-[#566C6A] hover:text-[#D97706] transition-colors cursor-pointer"
                                     >
-                                        <span className="material-symbols-outlined text-[20px]">
-                                            {balanceVisible ? "visibility" : "visibility_off"}
-                                        </span>
+                                        <PaymentIcon
+                                            name={balanceVisible ? "visibility" : "visibility_off"}
+                                            className="w-5 h-5"
+                                        />
                                     </button>
                                 </div>
 
@@ -298,7 +294,7 @@ export function ConsumerWalletView() {
                                     className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-[#D97706] to-[#E07A1F] text-white shadow-lg shadow-[#D97706]/25 hover:shadow-[#D97706]/40 hover:brightness-105 transition-all transform active:scale-95 group border border-[#FED7AA]/40 cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-[26px]">send</span>
+                                        <PaymentIcon name="send" className="w-[26px] h-[26px]" />
                                     </div>
                                     <span className="font-bold text-xs sm:text-sm">Send Money</span>
                                     <span className="text-[10px] text-amber-100 font-semibold">Free Instantly</span>
@@ -310,7 +306,7 @@ export function ConsumerWalletView() {
                                     className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB] hover:bg-[#FFF7ED] hover:border-[#D97706]/40 transition-all transform active:scale-95 group shadow-xs cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-1.5 shadow-sm text-[#D97706] border border-[#E2EBE9] group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-[26px]">qr_code_scanner</span>
+                                        <PaymentIcon name="qr_code_scanner" className="w-[26px] h-[26px]" />
                                     </div>
                                     <span className="font-bold text-xs sm:text-sm">Scan / QR Ph</span>
                                     <span className="text-[10px] text-[#566C6A] font-medium">National Rails</span>
@@ -322,7 +318,7 @@ export function ConsumerWalletView() {
                                     className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB] hover:bg-[#FFF7ED] hover:border-[#D97706]/40 transition-all transform active:scale-95 group shadow-xs cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-1.5 shadow-sm text-[#D97706] border border-[#E2EBE9] group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-[26px]">receipt_long</span>
+                                        <PaymentIcon name="receipt_long" className="w-[26px] h-[26px]" />
                                     </div>
                                     <span className="font-bold text-xs sm:text-sm">Pay Bills</span>
                                     <span className="text-[10px] text-[#566C6A] font-medium">600+ Billers</span>
@@ -334,7 +330,7 @@ export function ConsumerWalletView() {
                                     className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB] hover:bg-[#FFF7ED] hover:border-[#D97706]/40 transition-all transform active:scale-95 group shadow-xs cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-1.5 shadow-sm text-[#D97706] border border-[#E2EBE9] group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-[26px]">add_circle</span>
+                                        <PaymentIcon name="add_circle" className="w-[26px] h-[26px]" />
                                     </div>
                                     <span className="font-bold text-xs sm:text-sm">Cash In</span>
                                     <span className="text-[10px] text-[#566C6A] font-medium">Instant OTC / Bank</span>
@@ -388,7 +384,7 @@ export function ConsumerWalletView() {
                                     </div>
                                 ) : (
                                     <div className="py-6 px-4 text-center rounded-xl bg-[#F4F7F6] border border-[#D3DEDB]">
-                                        <span className="material-symbols-outlined text-[26px] text-[#8B9F9D] mx-auto block mb-1">contacts</span>
+                                        <PaymentIcon name="contacts" className="w-[26px] h-[26px] text-[#8B9F9D] mx-auto block mb-1" />
                                         <p className="text-xs font-bold text-[#0D2322]">No Recent Contacts</p>
                                         <p className="text-[11px] text-[#566C6A] mt-0.5">Frequent payees will appear here.</p>
                                     </div>
@@ -413,7 +409,7 @@ export function ConsumerWalletView() {
                                 </div>
                                 <div className="mt-6 flex items-center justify-between pt-2 border-t border-white/10">
                                     <div>
-                                        <span className="text-xs text-gray-300 block font-medium">This Month's Interest</span>
+                                        <span className="text-xs text-gray-300 block font-medium">This Month&apos;s Interest</span>
                                         <span className="text-base font-mono font-extrabold text-[#E07A1F]">+₱0.00</span>
                                     </div>
                                     <button
@@ -491,7 +487,7 @@ export function ConsumerWalletView() {
                                                                 ? "bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]"
                                                                 : "bg-[#E8F5F1] text-[#047857] border-[#A7F3D0]"
                                                         }`}>
-                                                            <span className="material-symbols-outlined text-[22px]">{tx.icon}</span>
+                                                            <PaymentIcon name={tx.icon} className="w-[22px] h-[22px]" />
                                                         </div>
 
                                                         <div>
@@ -518,7 +514,7 @@ export function ConsumerWalletView() {
                                                             {isNegative ? "-" : "+"}₱{Math.abs(tx.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                                                         </span>
                                                         <span className="text-[11px] text-[#047857] font-semibold flex items-center justify-end gap-1">
-                                                            <span className="material-symbols-outlined text-[14px]">check</span> {tx.status}
+                                                            <PaymentIcon name="check" className="w-3.5 h-3.5" /> {tx.status}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -528,7 +524,7 @@ export function ConsumerWalletView() {
                                 ) : (
                                     <div className="py-12 px-4 text-center rounded-2xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col items-center justify-center">
                                         <div className="w-12 h-12 rounded-xl bg-white border border-[#D3DEDB] flex items-center justify-center text-[#566C6A] mb-3 shadow-xs">
-                                            <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+                                            <PaymentIcon name="receipt_long" className="w-6 h-6" />
                                         </div>
                                         <h4 className="text-sm font-bold text-[#0D2322]">No Transactions Found</h4>
                                         <p className="text-xs text-[#566C6A] mt-1 max-w-sm">
@@ -549,7 +545,7 @@ export function ConsumerWalletView() {
                                     onClick={() => toast.success("PDF Statement Queued", { description: "Official account statement generated." })}
                                     className="font-bold text-[#0D2322] hover:text-[#D97706] transition-colors flex items-center gap-1 cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">download</span>
+                                    <PaymentIcon name="download" className="w-[18px] h-[18px]" />
                                     <span>Export PDF Statement</span>
                                 </button>
                             </div>
@@ -564,16 +560,16 @@ export function ConsumerWalletView() {
                     <div className="lg:col-span-7 bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col gap-4">
                         <div>
                             <h2 className="text-lg font-bold text-[#0D2322]">Send Money Instantly</h2>
-                            <p className="text-xs text-[#566C6A]">Zero transaction fees via InstaPay and ApexPay P2P rails.</p>
+                            <p className="text-xs text-[#566C6A]">Zero transaction fees via InstaPay and Map-ePay P2P rails.</p>
                         </div>
 
                         <form onSubmit={handleP2pSubmit} className="flex flex-col gap-4">
                             <div>
                                 <label className="text-xs font-bold text-[#0D2322] block mb-1">
-                                    Recipient Mobile Number or ApexPay ID
+                                    Recipient Mobile Number or Map-ePay ID
                                 </label>
                                 <div className="relative">
-                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-[#566C6A] text-[20px]">account_circle</span>
+                                    <PaymentIcon name="account_circle" className="absolute left-3.5 top-2.5 text-[#566C6A] w-5 h-5" />
                                     <input
                                         type="text"
                                         value={p2pRecipient}
@@ -622,7 +618,7 @@ export function ConsumerWalletView() {
                                 type="submit"
                                 className="w-full py-3 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white font-bold text-sm hover:brightness-105 shadow-md shadow-[#D97706]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                             >
-                                <span className="material-symbols-outlined text-[20px]">send</span>
+                                <PaymentIcon name="send" className="w-5 h-5" />
                                 <span>Confirm and Send Now</span>
                             </button>
                         </form>
@@ -632,7 +628,7 @@ export function ConsumerWalletView() {
                         {/* QR Ph Card */}
                         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col items-center text-center">
                             <div className="w-14 h-14 rounded-2xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center mb-2 border border-[#FED7AA]">
-                                <span className="material-symbols-outlined text-[32px]">qr_code_2</span>
+                                <PaymentIcon name="qr_code_2" className="w-8 h-8" />
                             </div>
                             <h3 className="font-bold text-base text-[#0D2322]">National QR Ph Standard</h3>
                             <p className="text-xs text-[#566C6A] mt-1">Interoperable scanning for all merchant terminals and consumer transfers.</p>
@@ -665,7 +661,7 @@ export function ConsumerWalletView() {
                                     onClick={() => toast.info("Camera Initialized", { description: "Point device camera at any QR Ph merchant display." })}
                                     className="flex-1 py-2 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">photo_camera</span>
+                                    <PaymentIcon name="photo_camera" className="w-[18px] h-[18px] text-[#D97706]" />
                                     <span>Scan</span>
                                 </button>
                                 <button
@@ -673,7 +669,7 @@ export function ConsumerWalletView() {
                                     onClick={() => toast.success("QR Saved", { description: "Personal QR Ph code saved to gallery." })}
                                     className="flex-1 py-2 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">download</span>
+                                    <PaymentIcon name="download" className="w-[18px] h-[18px] text-[#D97706]" />
                                     <span>Save QR</span>
                                 </button>
                             </div>
@@ -684,7 +680,7 @@ export function ConsumerWalletView() {
                             <div>
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#D97706] text-[22px]">call_split</span>
+                                        <PaymentIcon name="call_split" className="text-[#D97706] w-[22px] h-[22px]" />
                                         <span className="font-bold text-sm text-[#0D2322]">Split the Bill</span>
                                     </div>
                                     <span className="px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#B45309] text-[10px] font-bold border border-[#FED7AA]">
@@ -742,12 +738,12 @@ export function ConsumerWalletView() {
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-sm text-[#0D2322]">Upcoming Scheduled Bills</h3>
                             <span className="text-xs text-[#566C6A] font-bold flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[16px]">schedule</span> Automated Biller Queue
+                                <PaymentIcon name="schedule" className="w-4 h-4" /> Automated Biller Queue
                             </span>
                         </div>
                         <div className="py-10 px-4 text-center rounded-2xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col items-center justify-center">
                             <div className="w-12 h-12 rounded-xl bg-white border border-[#D3DEDB] flex items-center justify-center text-[#566C6A] mb-2 shadow-xs">
-                                <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+                                <PaymentIcon name="receipt_long" className="w-6 h-6" />
                             </div>
                             <h4 className="text-sm font-bold text-[#0D2322]">No Upcoming Scheduled Bills</h4>
                             <p className="text-xs text-[#566C6A] mt-1 max-w-sm">
@@ -763,7 +759,7 @@ export function ConsumerWalletView() {
                             className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
                             <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
-                                <span className="material-symbols-outlined text-[28px]">electric_bolt</span>
+                                <PaymentIcon name="electric_bolt" className="w-7 h-7" />
                             </div>
                             <span className="font-bold text-sm text-[#0D2322]">Electricity</span>
                             <span className="text-xs text-[#566C6A]">42 Billers Available</span>
@@ -775,7 +771,7 @@ export function ConsumerWalletView() {
                             className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
                             <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#B45309] flex items-center justify-center border border-[#FED7AA]">
-                                <span className="material-symbols-outlined text-[28px]">water_drop</span>
+                                <PaymentIcon name="water_drop" className="w-7 h-7" />
                             </div>
                             <span className="font-bold text-sm text-[#0D2322]">Water Utilities</span>
                             <span className="text-xs text-[#566C6A]">38 Billers Available</span>
@@ -787,7 +783,7 @@ export function ConsumerWalletView() {
                             className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
                             <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
-                                <span className="material-symbols-outlined text-[28px]">wifi</span>
+                                <PaymentIcon name="wifi" className="w-7 h-7" />
                             </div>
                             <span className="font-bold text-sm text-[#0D2322]">Telecom & Fiber</span>
                             <span className="text-xs text-[#566C6A]">25 Billers Available</span>
@@ -799,7 +795,7 @@ export function ConsumerWalletView() {
                             className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
                             <div className="w-12 h-12 rounded-xl bg-[#E8F5F1] text-[#047857] flex items-center justify-center border border-[#A7F3D0]">
-                                <span className="material-symbols-outlined text-[28px]">account_balance</span>
+                                <PaymentIcon name="account_balance" className="w-7 h-7" />
                             </div>
                             <span className="font-bold text-sm text-[#0D2322]">Government</span>
                             <span className="text-xs text-[#566C6A]">SSS, Pag-IBIG, BIR</span>
@@ -832,11 +828,11 @@ export function ConsumerWalletView() {
 
                     <div className="py-12 px-4 text-center rounded-2xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col items-center justify-center">
                         <div className="w-12 h-12 rounded-xl bg-white border border-[#D3DEDB] flex items-center justify-center text-[#D97706] mb-3 shadow-xs">
-                            <span className="material-symbols-outlined text-[24px]">savings</span>
+                            <PaymentIcon name="savings" className="w-6 h-6" />
                         </div>
                         <h4 className="text-sm font-bold text-[#0D2322]">No Active Savings Goals</h4>
                         <p className="text-xs text-[#566C6A] mt-1 max-w-sm">
-                            You currently have no savings pockets open. Click "+ Create Goal Pocket" to start setting aside funds with high-yield interest.
+                            You currently have no savings pockets open. Click &quot;+ Create Goal Pocket&quot; to start setting aside funds with high-yield interest.
                         </p>
                     </div>
                 </div>
@@ -865,12 +861,12 @@ export function ConsumerWalletView() {
 
                                 <div className="relative z-10 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-extrabold tracking-widest text-white text-base">ApexPay</span>
+                                        <span className="font-extrabold tracking-widest text-white text-base">Map-ePay</span>
                                         <span className="px-2 py-0.5 rounded-md bg-[#D97706]/30 text-[#E07A1F] text-[10px] font-mono tracking-wider uppercase font-bold border border-[#D97706]/40">
                                             Smart Pass
                                         </span>
                                     </div>
-                                    <span className="material-symbols-outlined text-white/80 text-[24px]">contactless</span>
+                                    <PaymentIcon name="contactless" className="text-white/80 w-6 h-6" />
                                 </div>
 
                                 <div className="relative z-10 my-auto">
@@ -907,7 +903,7 @@ export function ConsumerWalletView() {
                                     onClick={handleRevealCvv}
                                     className="flex-1 py-2.5 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">key</span>
+                                    <PaymentIcon name="key" className="w-[18px] h-[18px] text-[#D97706]" />
                                     <span>
                                         {cvvSecondsLeft > 0 ? `CVV Active (${cvvSecondsLeft}s)` : "Reveal Dynamic CVV (60s)"}
                                     </span>
@@ -917,7 +913,7 @@ export function ConsumerWalletView() {
                                     onClick={() => toast.success("Digital card linked to Apple/Google Wallet")}
                                     className="flex-1 py-2.5 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">wallet</span>
+                                    <PaymentIcon name="wallet" className="w-[18px] h-[18px] text-[#D97706]" />
                                     <span>Add to Wallet</span>
                                 </button>
                             </div>
@@ -933,7 +929,7 @@ export function ConsumerWalletView() {
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB]">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-[20px]">lock</span>
+                                                <PaymentIcon name="lock" className="w-5 h-5" />
                                             </div>
                                             <div>
                                                 <span className="font-bold text-xs sm:text-sm text-[#0D2322] block">Freeze Card</span>
@@ -959,7 +955,7 @@ export function ConsumerWalletView() {
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB]">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
+                                                <PaymentIcon name="shopping_cart" className="w-5 h-5" />
                                             </div>
                                             <div>
                                                 <span className="font-bold text-xs sm:text-sm text-[#0D2322] block">Online Payments</span>
@@ -980,7 +976,7 @@ export function ConsumerWalletView() {
                                     <div className="flex items-center justify-between p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB]">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-[#E8F5F1] text-[#047857] flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-[20px]">public</span>
+                                                <PaymentIcon name="public" className="w-5 h-5" />
                                             </div>
                                             <div>
                                                 <span className="font-bold text-xs sm:text-sm text-[#0D2322] block">Overseas Transactions</span>

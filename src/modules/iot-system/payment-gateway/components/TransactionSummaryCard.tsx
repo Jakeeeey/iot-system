@@ -2,6 +2,7 @@
 
 import React from "react";
 import { SmartCardInfo } from "../types";
+import { PaymentIcon } from "./PaymentIcon";
 
 interface TransactionSummaryCardProps {
     card: SmartCardInfo;
@@ -75,21 +76,21 @@ export function TransactionSummaryCard({
                 >
                     {isProcessing ? (
                         <>
-                            <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                            <PaymentIcon name="sync" className="w-4 h-4 animate-spin" />
                             <span>Processing Tap & Clearing...</span>
                         </>
                     ) : (
                         <>
                             <span>Confirm Top-up (₱{total.toFixed(2)})</span>
-                            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                            <PaymentIcon name="arrow_forward" className="w-4 h-4" />
                         </>
                     )}
                 </button>
 
                 <div className="p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB] text-[11px] space-y-1.5 text-[#566C6A]">
                     <div className="flex items-center gap-1.5 font-bold text-[#0D2322]">
-                        <span className="material-symbols-outlined text-[16px] text-[#059669]">verified_user</span>
-                        <span>PCI-DSS Level 1 &amp; ApexPay Guard</span>
+                        <PaymentIcon name="verified_user" className="w-4 h-4 text-[#059669]" />
+                        <span>PCI-DSS Level 1 &amp; Map-ePay Guard</span>
                     </div>
                     <p className="text-[10px] leading-relaxed">
                         Card transactions are tokenized with end-to-end ECDSA signatures. Physical card balance updates via NFC edge antenna within 250ms.
