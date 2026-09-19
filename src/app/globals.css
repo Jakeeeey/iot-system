@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -458,4 +460,75 @@ html.dark .leaflet-tile {
 :is(.dark) .leaflet-tile-pane,
 html.dark .leaflet-tile-pane {
   background-color: #222 !important;
+}
+
+/* ============================================================
+   APEXPAY PAYMENT GATEWAY SUITE THEME TOKENS
+   Preserves Nordic Spruce (#0D2322) & Solar Amber (#D97706)
+   on Porcelain (#F4F7F6) Canvas independently of system dark mode
+   ============================================================ */
+.apexpay-portal {
+  --background: 168 6% 96%;
+  --foreground: 177 46% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 177 46% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 177 46% 9%;
+  --primary: 38 92% 44%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 165 14% 94%;
+  --secondary-foreground: 177 46% 9%;
+  --muted: 165 14% 94%;
+  --muted-foreground: 173 11% 38%;
+  --border: 166 12% 85%;
+  --input: 166 12% 85%;
+  --ring: 38 92% 44%;
+  color-scheme: light !important;
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  background-color: #F4F7F6 !important;
+  color: #0D2322 !important;
+}
+
+:is(.dark) .apexpay-portal {
+  --background: 168 6% 96%;
+  --foreground: 177 46% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 177 46% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 177 46% 9%;
+  --primary: 38 92% 44%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 165 14% 94%;
+  --secondary-foreground: 177 46% 9%;
+  --muted: 165 14% 94%;
+  --muted-foreground: 173 11% 38%;
+  --border: 166 12% 85%;
+  --input: 166 12% 85%;
+  --ring: 38 92% 44%;
+  color-scheme: light !important;
+  background-color: #F4F7F6 !important;
+  color: #0D2322 !important;
+}
+
+.apexpay-portal .font-mono,
+.apexpay-portal [class*="font-mono"] {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+.apexpay-portal .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }

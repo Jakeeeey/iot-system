@@ -9,7 +9,7 @@ const INITIAL_CARD: SmartCardInfo = {
     cardUid: "04:88:29:A3:NFC:VOS",
     cardType: "VOS SMART PASS (DESFire EV3)",
     status: "ACTIVE",
-    balance: 420.50,
+    balance: 0.00,
     currency: "PHP",
 };
 

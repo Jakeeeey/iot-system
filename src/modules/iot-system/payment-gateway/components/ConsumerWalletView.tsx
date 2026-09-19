@@ -1,36 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-    Eye,
-    EyeOff,
-    Send,
-    QrCode,
-    Receipt,
-    PlusCircle,
-    Copy,
-    Shield,
-    CheckCircle2,
-    Coffee,
-    ArrowDownLeft,
-    Zap,
-    User,
-    ShoppingBag,
-    Download,
-    Camera,
-    Share2,
-    Lock,
-    Key,
-    Smartphone,
-    Globe,
-    Gauge,
-    Sliders,
-    CreditCard,
-    AlertTriangle,
-    Coins,
-} from "lucide-react";
 import { toast } from "sonner";
-import { WalletTransactionItem, QuickContact, ScheduledBill, SavingsGoal, CardSecuritySettings } from "../types";
+import { WalletTransactionItem, QuickContact, CardSecuritySettings } from "../types";
 import { QuickSendModal } from "./QuickSendModal";
 import { ReceiptDrawer } from "./ReceiptDrawer";
 import { SmartCardVisualizer } from "./SmartCardVisualizer";
@@ -39,88 +11,11 @@ import { PaymentChannelSelector } from "./PaymentChannelSelector";
 import { TransactionSummaryCard } from "./TransactionSummaryCard";
 import { usePaymentGatewayContext } from "../providers/PaymentGatewayProvider";
 
-const INITIAL_TRANSACTIONS: WalletTransactionItem[] = [
-    {
-        id: "tx-1",
-        merchant: "Starbucks Reserve BGC",
-        amount: -385.00,
-        type: "spending",
-        time: "2:14 PM",
-        date: "Today",
-        referenceCode: "POS Terminal #8819",
-        cashback: "+₱7.70 (2% Cashback)",
-        category: "Food & Dining",
-        paymentMethod: "Visa Contactless (Spruce Slate Debit)",
-        status: "Settled",
-        icon: "coffee",
-    },
-    {
-        id: "tx-2",
-        merchant: "Nexus Corp Payroll Direct",
-        amount: 45000.00,
-        type: "in",
-        time: "8:00 AM",
-        date: "Apr 15, 2025",
-        referenceCode: "ACH REF #NX9901452",
-        cashback: "₱0.00",
-        category: "Payroll / Compensation",
-        paymentMethod: "InstaPay Direct Deposit",
-        status: "Settled",
-        icon: "salary",
-    },
-    {
-        id: "tx-3",
-        merchant: "Meralco Utilities",
-        amount: -4820.10,
-        type: "spending",
-        time: "9:30 AM",
-        date: "Apr 14, 2025",
-        referenceCode: "CAN #0991204881",
-        cashback: "Waived Fee",
-        category: "Utilities",
-        paymentMethod: "ApexPay Wallet Direct",
-        status: "Auto-Paid",
-        icon: "bolt",
-    },
-    {
-        id: "tx-4",
-        merchant: "Marco Ramos (P2P)",
-        amount: 1250.00,
-        type: "in",
-        time: "7:15 PM",
-        date: "Apr 12, 2025",
-        referenceCode: "ApexPay P2P #TX0932",
-        cashback: "Free",
-        category: "P2P Transfer",
-        paymentMethod: "Wallet to Wallet",
-        status: "Settled",
-        icon: "user",
-    },
-    {
-        id: "tx-5",
-        merchant: "Uniqlo SM Aura",
-        amount: -2490.00,
-        type: "spending",
-        time: "4:45 PM",
-        date: "Apr 10, 2025",
-        referenceCode: "Terminal #9940",
-        cashback: "+₱49.80 (2% Cashback)",
-        category: "Shopping",
-        paymentMethod: "QR Ph Dynamic Scan",
-        status: "Settled",
-        icon: "shopping",
-    },
-];
+const INITIAL_TRANSACTIONS: WalletTransactionItem[] = [];
 
-const QUICK_CONTACTS: QuickContact[] = [
-    { id: "c1", name: "Marco", phone: "0918-554-1029", initials: "MR", colorTheme: "amber" },
-    { id: "c2", name: "Aria", phone: "0917-882-9901", initials: "AS", colorTheme: "sage" },
-    { id: "c3", name: "Danilo", phone: "0999-312-4011", initials: "DC", colorTheme: "slate" },
-    { id: "c4", name: "Sarah", phone: "0922-109-8873", initials: "SC", colorTheme: "amber" },
-];
+const QUICK_CONTACTS: QuickContact[] = [];
 
 export function ConsumerWalletView() {
-    // Context from Smart Card Top-up
     const {
         card,
         presetAmounts,
@@ -139,17 +34,12 @@ export function ConsumerWalletView() {
         handleProcessTopUp,
     } = usePaymentGatewayContext();
 
-    // Tab Navigation State
     const [activeTab, setActiveTab] = useState<"overview" | "send" | "bills" | "savings" | "cards">("overview");
-
-    // Balance visibility toggle
     const [balanceVisible, setBalanceVisible] = useState(true);
 
-    // Dynamic CVV Generation state (60s countdown)
     const [cvvDisplay, setCvvDisplay] = useState("•••");
     const [cvvSecondsLeft, setCvvSecondsLeft] = useState(0);
 
-    // Card security toggles
     const [cardSettings, setCardSettings] = useState<CardSecuritySettings>({
         isFrozen: false,
         onlinePayments: true,
@@ -157,29 +47,27 @@ export function ConsumerWalletView() {
         dailyLimit: 100000,
     });
 
-    // Transactions and receipt drawer
-    const [transactions, setTransactions] = useState<WalletTransactionItem[]>(INITIAL_TRANSACTIONS);
+    const [transactions] = useState<WalletTransactionItem[]>(INITIAL_TRANSACTIONS);
     const [txFilter, setTxFilter] = useState<"all" | "in" | "spending">("all");
     const [selectedTx, setSelectedTx] = useState<WalletTransactionItem | null>(null);
 
-    // Modals
     const [isSendModalOpen, setIsSendModalOpen] = useState(false);
     const [modalPayee, setModalPayee] = useState("");
 
-    // P2P Direct Send Form in Send tab
     const [p2pRecipient, setP2pRecipient] = useState("");
     const [p2pAmount, setP2pAmount] = useState("");
 
-    // Split Bill State
-    const [splitTotal, setSplitTotal] = useState("3450");
-    const [splitPeople, setSplitPeople] = useState(4);
+    const [splitTotal, setSplitTotal] = useState("0");
+    const [splitPeople] = useState(4);
 
-    // Savings Goals
-    const [emergencyFund, setEmergencyFund] = useState(18500);
-    const [tokyoTrip, setTokyoTrip] = useState(5920.50);
-    const [autoRoundUpActive, setAutoRoundUpActive] = useState(true);
+    const [emergencyFund, setEmergencyFund] = useState(0);
+    const [tokyoTrip, setTokyoTrip] = useState(0);
+    const [autoRoundUpActive, setAutoRoundUpActive] = useState(false);
 
-    // CVV Countdown timer
+    const spendableBalance = card.balance;
+    const vaultBalance = 0;
+    const totalNetWorth = spendableBalance + vaultBalance;
+
     useEffect(() => {
         if (cvvSecondsLeft <= 0) {
             setCvvDisplay("•••");
@@ -202,10 +90,10 @@ export function ConsumerWalletView() {
 
     const handleCopyAccount = () => {
         if (navigator.clipboard) {
-            navigator.clipboard.writeText("09170044421");
+            navigator.clipboard.writeText(card.cardUid);
         }
-        toast.info("Account Number Copied", {
-            description: "Account number 0917-•••-4421 copied to clipboard.",
+        toast.info("Card UID Copied", {
+            description: `Card UID ${card.cardUid} copied to clipboard.`,
         });
     };
 
@@ -221,7 +109,7 @@ export function ConsumerWalletView() {
             toast.error("Invalid Amount", { description: "Please enter an amount greater than ₱0.00." });
             return;
         }
-        toast.success("P2P Transfer Sent!", {
+        toast.success("Transfer Completed!", {
             description: `Transferred ₱${amt.toFixed(2)} to ${p2pRecipient} successfully via InstaPay.`,
         });
         setP2pRecipient("");
@@ -236,101 +124,100 @@ export function ConsumerWalletView() {
     const splitAmountEach = (parseFloat(splitTotal) || 0) / (splitPeople || 1);
 
     return (
-        <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 py-2">
+        <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6">
             {/* Top Consumer Greeting Ribbon */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
                 <div>
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#0D2322] dark:text-foreground">
-                            Good afternoon, Elena
-                        </h1>
-                        <span className="inline-flex items-center text-[#D97706]" title="Tier 3 Verified">
-                            <CheckCircle2 className="w-5 h-5 fill-[#D97706] text-white" />
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0D2322]">
+                            Welcome, Account Holder
                         </span>
+                        <span className="material-symbols-outlined text-[#D97706] text-[24px]">verified</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-[#566C6A] dark:text-muted-foreground mt-0.5">
-                        Welcome back to your everyday financial hub powered by ApexPay.
+                    <p className="text-xs sm:text-sm text-[#566C6A] mt-0.5">
+                        Everyday financial and smart card top-up portal.
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F5F1] text-[#059669] border border-[#BCE3D6] text-xs font-bold">
-                        <Shield className="w-3.5 h-3.5" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F5F1] text-[#047857] border border-[#A7F3D0] shadow-xs text-xs font-bold">
+                        <span className="material-symbols-outlined text-[16px] text-[#047857]">shield</span>
                         <span>PDIC Insured up to ₱500,000</span>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF7ED] text-[#B45309] border border-[#FED7AA] text-xs font-bold">
-                        <span className="h-2 w-2 rounded-full bg-[#D97706]" />
-                        <span>Tier 3 Verified Account</span>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF7ED] text-[#B45309] border border-[#FED7AA] shadow-xs text-xs font-bold">
+                        <span className="h-2 w-2 rounded-full bg-[#D97706] inline-block" />
+                        <span>Verified Gateway User</span>
                     </div>
 
-                    <div className="flex items-center bg-white dark:bg-card px-3 py-1 rounded-full border border-[#D3DEDB] dark:border-border text-xs text-[#566C6A] dark:text-muted-foreground">
-                        <span className="font-mono font-semibold mr-2">0917 •••• 4421</span>
+                    <div className="flex items-center bg-white px-3 py-1 rounded-full shadow-xs border border-[#D3DEDB] text-xs text-[#566C6A]">
+                        <span className="font-mono font-semibold mr-2">{card.cardUid}</span>
                         <button
                             type="button"
                             onClick={handleCopyAccount}
                             className="hover:text-[#D97706] transition-colors cursor-pointer"
                             title="Copy Account Number"
                         >
-                            <Copy className="w-3.5 h-3.5" />
+                            <span className="material-symbols-outlined text-[16px]">content_copy</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Sub-Page Tab Navigation */}
-            <div className="w-full bg-white dark:bg-card rounded-2xl p-1.5 shadow-xs border border-[#D3DEDB] dark:border-border overflow-x-auto">
+            <div className="w-full bg-white rounded-2xl p-1.5 shadow-[0_2px_10px_rgba(13,35,34,0.03)] border border-[#D3DEDB] overflow-x-auto">
                 <div className="flex items-center min-w-max gap-1">
                     <button
                         type="button"
                         onClick={() => setActiveTab("overview")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                             activeTab === "overview"
-                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-sm font-extrabold"
-                                : "text-[#566C6A] dark:text-muted-foreground hover:bg-[#F4F7F6] dark:hover:bg-muted"
+                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-md shadow-[#D97706]/25"
+                                : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <Coins className="w-4 h-4" />
+                        <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
                         <span>Overview & Balance</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setActiveTab("send")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                             activeTab === "send"
-                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-sm font-extrabold"
-                                : "text-[#566C6A] dark:text-muted-foreground hover:bg-[#F4F7F6] dark:hover:bg-muted"
+                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-md shadow-[#D97706]/25"
+                                : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <Send className="w-4 h-4" />
+                        <span className="material-symbols-outlined text-[20px]">send_money</span>
                         <span>Send & Request (P2P / QR Ph)</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setActiveTab("bills")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                             activeTab === "bills"
-                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-sm font-extrabold"
-                                : "text-[#566C6A] dark:text-muted-foreground hover:bg-[#F4F7F6] dark:hover:bg-muted"
+                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-md shadow-[#D97706]/25"
+                                : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <Receipt className="w-4 h-4" />
+                        <span className="material-symbols-outlined text-[20px]">receipt</span>
                         <span>Bills & Utilities</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setActiveTab("savings")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                             activeTab === "savings"
-                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-sm font-extrabold"
-                                : "text-[#566C6A] dark:text-muted-foreground hover:bg-[#F4F7F6] dark:hover:bg-muted"
+                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-md shadow-[#D97706]/25"
+                                : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
+                        <span className="material-symbols-outlined text-[20px]">savings</span>
                         <span>Savings Pockets</span>
-                        <span className="px-1.5 py-0.5 rounded-full bg-[#E8F5F1] text-[#059669] text-[10px] font-extrabold border border-[#BCE3D6]">
+                        <span className="ml-1 px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#047857] text-[10px] font-bold border border-[#A7F3D0]">
                             4.5% APY
                         </span>
                     </button>
@@ -338,31 +225,29 @@ export function ConsumerWalletView() {
                     <button
                         type="button"
                         onClick={() => setActiveTab("cards")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                             activeTab === "cards"
-                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-sm font-extrabold"
-                                : "text-[#566C6A] dark:text-muted-foreground hover:bg-[#F4F7F6] dark:hover:bg-muted"
+                                ? "bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white shadow-md shadow-[#D97706]/25"
+                                : "text-[#566C6A] hover:text-[#0D2322] hover:bg-[#EDF2F1] font-semibold"
                         }`}
                     >
-                        <CreditCard className="w-4 h-4" />
-                        <span>Cards & Smart Passes</span>
+                        <span className="material-symbols-outlined text-[20px]">credit_card</span>
+                        <span>Cards & Security</span>
                     </button>
                 </div>
             </div>
 
-            {/* ======================================================== */}
             {/* TAB 1: OVERVIEW & BALANCE */}
-            {/* ======================================================== */}
             {activeTab === "overview" && (
-                <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-6">
                     {/* Hero Balance Banner */}
-                    <div className="w-full bg-white dark:bg-card rounded-2xl p-6 sm:p-8 shadow-sm border border-[#D3DEDB] dark:border-border relative overflow-hidden">
+                    <div className="w-full bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_24px_rgba(13,35,34,0.04)] border border-[#D3DEDB] relative overflow-hidden">
                         <div className="absolute -right-16 -top-16 w-96 h-96 bg-gradient-to-br from-[#D97706]/10 to-[#E8F5F1]/30 rounded-full blur-3xl pointer-events-none" />
 
                         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs uppercase tracking-wider font-bold text-[#566C6A] dark:text-muted-foreground">
+                                    <span className="text-xs uppercase tracking-wider font-bold text-[#566C6A]">
                                         Total Net Worth across ApexPay
                                     </span>
                                     <button
@@ -370,37 +255,39 @@ export function ConsumerWalletView() {
                                         onClick={() => setBalanceVisible(!balanceVisible)}
                                         className="p-1 rounded-md text-[#566C6A] hover:text-[#D97706] transition-colors cursor-pointer"
                                     >
-                                        {balanceVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                        <span className="material-symbols-outlined text-[20px]">
+                                            {balanceVisible ? "visibility" : "visibility_off"}
+                                        </span>
                                     </button>
                                 </div>
 
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-xl sm:text-2xl font-bold text-[#566C6A] dark:text-muted-foreground">PHP</span>
-                                    <span className="text-3xl sm:text-5xl font-black tracking-tight text-[#0D2322] dark:text-foreground font-mono">
-                                        {balanceVisible ? "148,920.50" : "••••••••"}
+                                    <span className="text-xl sm:text-2xl font-bold text-[#566C6A]">PHP</span>
+                                    <span className="text-4xl sm:text-5xl font-extrabold text-[#0D2322] tracking-tight font-mono">
+                                        {balanceVisible ? totalNetWorth.toLocaleString("en-US", { minimumFractionDigits: 2 }) : "••••••••"}
                                     </span>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-4 pt-1 text-xs sm:text-sm">
                                     <div className="flex items-center gap-2">
                                         <div className="h-3 w-3 rounded-full bg-[#D97706]" />
-                                        <span className="text-[#566C6A] dark:text-muted-foreground">Available to Spend:</span>
-                                        <span className="font-bold text-[#0D2322] dark:text-foreground">
-                                            {balanceVisible ? "₱124,500.00" : "₱••••••"}
+                                        <span className="text-[#566C6A]">Available to Spend:</span>
+                                        <span className="font-bold text-[#0D2322]">
+                                            {balanceVisible ? `₱${spendableBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}` : "₱••••••"}
                                         </span>
                                     </div>
-                                    <div className="h-3 w-px bg-[#D3DEDB] dark:bg-border hidden sm:block" />
+                                    <div className="h-3.5 w-px bg-[#D3DEDB] hidden sm:block" />
                                     <div className="flex items-center gap-2">
-                                        <div className="h-3 w-3 rounded-full bg-[#059669]" />
-                                        <span className="text-[#566C6A] dark:text-muted-foreground">Vault Pockets (Interest Earning):</span>
-                                        <span className="font-bold text-[#059669] dark:text-emerald-400">
-                                            {balanceVisible ? "₱24,420.50" : "₱••••••"}
+                                        <div className="h-3 w-3 rounded-full bg-[#047857]" />
+                                        <span className="text-[#566C6A]">Vault Pockets (Interest Earning):</span>
+                                        <span className="font-bold text-[#047857]">
+                                            {balanceVisible ? `₱${vaultBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}` : "₱••••••"}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Quick 4 Main Actions */}
+                            {/* Quick 4 Action Cards */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                                 <button
                                     type="button"
@@ -408,49 +295,49 @@ export function ConsumerWalletView() {
                                         setModalPayee("");
                                         setIsSendModalOpen(true);
                                     }}
-                                    className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-gradient-to-br from-[#D97706] to-[#E07A1F] text-white shadow-md shadow-[#D97706]/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer group"
+                                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-[#D97706] to-[#E07A1F] text-white shadow-lg shadow-[#D97706]/25 hover:shadow-[#D97706]/40 hover:brightness-105 transition-all transform active:scale-95 group border border-[#FED7AA]/40 cursor-pointer"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-                                        <Send className="w-5 h-5 text-white" />
+                                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
+                                        <span className="material-symbols-outlined text-[26px]">send</span>
                                     </div>
-                                    <span className="text-xs font-bold">Send Money</span>
-                                    <span className="text-[10px] text-amber-100 font-semibold">Free Instant</span>
+                                    <span className="font-bold text-xs sm:text-sm">Send Money</span>
+                                    <span className="text-[10px] text-amber-100 font-semibold">Free Instantly</span>
                                 </button>
 
                                 <button
                                     type="button"
                                     onClick={() => setActiveTab("send")}
-                                    className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#F4F7F6] dark:bg-muted text-[#0D2322] dark:text-foreground border border-[#D3DEDB] dark:border-border hover:bg-[#FFF7ED] hover:border-[#D97706]/40 active:scale-95 transition-all cursor-pointer group"
+                                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB] hover:bg-[#FFF7ED] hover:border-[#D97706]/40 transition-all transform active:scale-95 group shadow-xs cursor-pointer"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-card flex items-center justify-center mb-1.5 shadow-xs text-[#D97706] border border-[#D3DEDB]/60 group-hover:scale-110 transition-transform">
-                                        <QrCode className="w-5 h-5" />
+                                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-1.5 shadow-sm text-[#D97706] border border-[#E2EBE9] group-hover:scale-110 transition-transform">
+                                        <span className="material-symbols-outlined text-[26px]">qr_code_scanner</span>
                                     </div>
-                                    <span className="text-xs font-bold">Scan / QR Ph</span>
-                                    <span className="text-[10px] text-[#566C6A] dark:text-muted-foreground">National Rails</span>
+                                    <span className="font-bold text-xs sm:text-sm">Scan / QR Ph</span>
+                                    <span className="text-[10px] text-[#566C6A] font-medium">National Rails</span>
                                 </button>
 
                                 <button
                                     type="button"
                                     onClick={() => setActiveTab("bills")}
-                                    className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#F4F7F6] dark:bg-muted text-[#0D2322] dark:text-foreground border border-[#D3DEDB] dark:border-border hover:bg-[#FFF7ED] hover:border-[#D97706]/40 active:scale-95 transition-all cursor-pointer group"
+                                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB] hover:bg-[#FFF7ED] hover:border-[#D97706]/40 transition-all transform active:scale-95 group shadow-xs cursor-pointer"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-card flex items-center justify-center mb-1.5 shadow-xs text-[#D97706] border border-[#D3DEDB]/60 group-hover:scale-110 transition-transform">
-                                        <Receipt className="w-5 h-5" />
+                                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-1.5 shadow-sm text-[#D97706] border border-[#E2EBE9] group-hover:scale-110 transition-transform">
+                                        <span className="material-symbols-outlined text-[26px]">receipt_long</span>
                                     </div>
-                                    <span className="text-xs font-bold">Pay Bills</span>
-                                    <span className="text-[10px] text-[#566C6A] dark:text-muted-foreground">600+ Billers</span>
+                                    <span className="font-bold text-xs sm:text-sm">Pay Bills</span>
+                                    <span className="text-[10px] text-[#566C6A] font-medium">600+ Billers</span>
                                 </button>
 
                                 <button
                                     type="button"
-                                    onClick={() => toast.info("Cash-In Gateways", { description: "Supported: BPI Direct, UnionBank, 7-Eleven CLiQQ Barcode, and OTC remittance centers." })}
-                                    className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#F4F7F6] dark:bg-muted text-[#0D2322] dark:text-foreground border border-[#D3DEDB] dark:border-border hover:bg-[#FFF7ED] hover:border-[#D97706]/40 active:scale-95 transition-all cursor-pointer group"
+                                    onClick={() => toast.info("Cash-In Gateways", { description: "BPI Direct, UnionBank, 7-Eleven CLiQQ Barcode, and OTC remittance." })}
+                                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB] hover:bg-[#FFF7ED] hover:border-[#D97706]/40 transition-all transform active:scale-95 group shadow-xs cursor-pointer"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-card flex items-center justify-center mb-1.5 shadow-xs text-[#D97706] border border-[#D3DEDB]/60 group-hover:scale-110 transition-transform">
-                                        <PlusCircle className="w-5 h-5" />
+                                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-1.5 shadow-sm text-[#D97706] border border-[#E2EBE9] group-hover:scale-110 transition-transform">
+                                        <span className="material-symbols-outlined text-[26px]">add_circle</span>
                                     </div>
-                                    <span className="text-xs font-bold">Cash In</span>
-                                    <span className="text-[10px] text-[#566C6A] dark:text-muted-foreground">Instant Bank/OTC</span>
+                                    <span className="font-bold text-xs sm:text-sm">Cash In</span>
+                                    <span className="text-[10px] text-[#566C6A] font-medium">Instant OTC / Bank</span>
                                 </button>
                             </div>
                         </div>
@@ -458,12 +345,12 @@ export function ConsumerWalletView() {
 
                     {/* 2-Column Section: Favorite Contacts & Recent Activity Feed */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        {/* Left (4 Cols): Send Again & High-Yield Banner */}
+                        {/* Left (4 Cols) */}
                         <div className="lg:col-span-4 flex flex-col gap-6">
                             {/* Favorite Contacts */}
-                            <div className="bg-white dark:bg-card rounded-2xl p-5 shadow-sm border border-[#D3DEDB] dark:border-border">
+                            <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB]">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Send Again</h3>
+                                    <span className="text-base font-bold text-[#0D2322]">Send Again</span>
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -475,50 +362,64 @@ export function ConsumerWalletView() {
                                         New Payee
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-4 gap-2 text-center">
-                                    {QUICK_CONTACTS.map((contact) => (
-                                        <button
-                                            key={contact.id}
-                                            type="button"
-                                            onClick={() => handleQuickSendContact(contact)}
-                                            className="flex flex-col items-center gap-1 group cursor-pointer"
-                                        >
-                                            <div className="w-11 h-11 rounded-full bg-[#FFF7ED] text-[#B45309] dark:bg-muted dark:text-foreground flex items-center justify-center font-bold text-xs group-hover:ring-2 ring-[#D97706] border border-[#FED7AA] transition-all">
-                                                {contact.initials}
-                                            </div>
-                                            <span className="text-[11px] font-semibold text-[#0D2322] dark:text-foreground truncate w-full">
-                                                {contact.name}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
+                                {QUICK_CONTACTS.length > 0 ? (
+                                    <div className="grid grid-cols-4 gap-2 text-center">
+                                        {QUICK_CONTACTS.map((contact) => (
+                                            <button
+                                                key={contact.id}
+                                                type="button"
+                                                onClick={() => handleQuickSendContact(contact)}
+                                                className="flex flex-col items-center gap-1 group cursor-pointer"
+                                            >
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm group-hover:ring-2 ring-[#D97706] transition-all ${
+                                                    contact.colorTheme === "amber"
+                                                        ? "bg-[#FFF7ED] text-[#B45309] border border-[#FED7AA]"
+                                                        : contact.colorTheme === "sage"
+                                                        ? "bg-[#E8F5F1] text-[#047857] border border-[#A7F3D0]"
+                                                        : "bg-[#EDF2F1] text-[#0D2322] border border-[#D3DEDB]"
+                                                }`}>
+                                                    {contact.initials}
+                                                </div>
+                                                <span className="text-xs font-semibold text-[#0D2322] truncate w-full">
+                                                    {contact.name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-6 px-4 text-center rounded-xl bg-[#F4F7F6] border border-[#D3DEDB]">
+                                        <span className="material-symbols-outlined text-[26px] text-[#8B9F9D] mx-auto block mb-1">contacts</span>
+                                        <p className="text-xs font-bold text-[#0D2322]">No Recent Contacts</p>
+                                        <p className="text-[11px] text-[#566C6A] mt-0.5">Frequent payees will appear here.</p>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* High-Yield Savings Highlight */}
-                            <div className="bg-gradient-to-br from-[#0A1C1B] via-[#0D2322] to-[#163331] text-white rounded-2xl p-6 shadow-md shadow-[#0D2322]/20 flex flex-col justify-between border border-[#163331]">
+                            {/* High-Yield Highlight Banner */}
+                            <div className="bg-gradient-to-br from-[#0A1C1B] via-[#0D2322] to-[#163331] text-white rounded-2xl p-6 shadow-lg shadow-[#0D2322]/20 flex flex-col justify-between border border-[#163331]">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="px-2 py-0.5 rounded-full bg-[#D97706]/20 text-[#E07A1F] text-[10px] font-extrabold border border-[#D97706]/30">
+                                        <span className="px-2 py-0.5 rounded-full bg-[#D97706]/20 text-[#E07A1F] text-[11px] font-extrabold border border-[#D97706]/30">
                                             High-Yield Pocket
                                         </span>
-                                        <span className="text-[11px] text-gray-300">Credited Daily</span>
+                                        <span className="text-xs text-gray-300">Credited Daily</span>
                                     </div>
-                                    <h4 className="text-base font-bold text-white tracking-tight">
+                                    <h3 className="text-lg font-bold text-white tracking-tight">
                                         Earn 4.5% p.a. on your savings
-                                    </h4>
+                                    </h3>
                                     <p className="text-xs text-gray-300 mt-1">
-                                        Zero lock-in period. Withdraw anytime back to your primary balance without fees.
+                                        No lock-in period. Withdraw anytime back to your primary balance without penalty.
                                     </p>
                                 </div>
                                 <div className="mt-6 flex items-center justify-between pt-2 border-t border-white/10">
                                     <div>
-                                        <span className="text-[10px] text-gray-400 block font-medium">This Month's Interest</span>
-                                        <span className="text-sm font-mono font-extrabold text-[#E07A1F]">+₱91.42</span>
+                                        <span className="text-xs text-gray-300 block font-medium">This Month's Interest</span>
+                                        <span className="text-base font-mono font-extrabold text-[#E07A1F]">+₱0.00</span>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("savings")}
-                                        className="px-3 py-1.5 rounded-xl bg-[#D97706] text-white text-xs font-bold hover:bg-[#B45309] transition-all shadow-xs cursor-pointer"
+                                        className="px-4 py-2 rounded-xl bg-[#D97706] text-white text-xs font-bold hover:bg-[#E07A1F] transition-all shadow-md cursor-pointer"
                                     >
                                         Boost Savings
                                     </button>
@@ -527,27 +428,23 @@ export function ConsumerWalletView() {
                         </div>
 
                         {/* Right (8 Cols): Recent Activity Feed & Ledger */}
-                        <div className="lg:col-span-8 bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
+                        <div className="lg:col-span-8 bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col justify-between">
                             <div>
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
                                     <div>
-                                        <h2 className="text-base sm:text-lg font-bold text-[#0D2322] dark:text-foreground">
-                                            Recent Activity
-                                        </h2>
-                                        <p className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                            Real-time settlement timeline & digital receipts
-                                        </p>
+                                        <h2 className="text-lg font-bold text-[#0D2322]">Recent Activity</h2>
+                                        <p className="text-xs text-[#566C6A]">Real-time settlement timeline & digital receipts</p>
                                     </div>
 
                                     {/* Feed Filter Tabs */}
-                                    <div className="flex items-center bg-[#F4F7F6] dark:bg-muted p-1 rounded-xl border border-[#D3DEDB] dark:border-border">
+                                    <div className="flex items-center bg-[#EDF2F1] p-1 rounded-xl border border-[#D3DEDB]">
                                         <button
                                             type="button"
                                             onClick={() => setTxFilter("all")}
                                             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                                 txFilter === "all"
-                                                    ? "bg-white dark:bg-card text-[#0D2322] dark:text-foreground shadow-xs"
-                                                    : "text-[#566C6A] dark:text-muted-foreground hover:text-foreground"
+                                                    ? "bg-white text-[#0D2322] shadow-xs"
+                                                    : "text-[#566C6A] hover:text-[#0D2322]"
                                             }`}
                                         >
                                             All
@@ -557,8 +454,8 @@ export function ConsumerWalletView() {
                                             onClick={() => setTxFilter("in")}
                                             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                                 txFilter === "in"
-                                                    ? "bg-white dark:bg-card text-[#0D2322] dark:text-foreground shadow-xs"
-                                                    : "text-[#566C6A] dark:text-muted-foreground hover:text-foreground"
+                                                    ? "bg-white text-[#0D2322] shadow-xs"
+                                                    : "text-[#566C6A] hover:text-[#0D2322]"
                                             }`}
                                         >
                                             Money In
@@ -568,8 +465,8 @@ export function ConsumerWalletView() {
                                             onClick={() => setTxFilter("spending")}
                                             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                                 txFilter === "spending"
-                                                    ? "bg-white dark:bg-card text-[#0D2322] dark:text-foreground shadow-xs"
-                                                    : "text-[#566C6A] dark:text-muted-foreground hover:text-foreground"
+                                                    ? "bg-white text-[#0D2322] shadow-xs"
+                                                    : "text-[#566C6A] hover:text-[#0D2322]"
                                             }`}
                                         >
                                             Spending
@@ -578,73 +475,81 @@ export function ConsumerWalletView() {
                                 </div>
 
                                 {/* Transaction List */}
-                                <div className="flex flex-col gap-2">
-                                    {filteredTransactions.map((tx) => {
-                                        const isNegative = tx.amount < 0;
-                                        return (
-                                            <div
-                                                key={tx.id}
-                                                onClick={() => setSelectedTx(tx)}
-                                                className="flex items-center justify-between p-3 hover:bg-[#F4F7F6] dark:hover:bg-muted/60 rounded-xl cursor-pointer transition-all border border-transparent hover:border-[#D3DEDB]/60"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                                                        isNegative
-                                                            ? "bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]"
-                                                            : "bg-[#E8F5F1] text-[#059669] border-[#BCE3D6]"
-                                                    }`}>
-                                                        {tx.icon === "coffee" && <Coffee className="w-5 h-5" />}
-                                                        {tx.icon === "salary" && <ArrowDownLeft className="w-5 h-5" />}
-                                                        {tx.icon === "bolt" && <Zap className="w-5 h-5" />}
-                                                        {tx.icon === "user" && <User className="w-5 h-5" />}
-                                                        {tx.icon === "shopping" && <ShoppingBag className="w-5 h-5" />}
+                                {filteredTransactions.length > 0 ? (
+                                    <div className="flex flex-col gap-2">
+                                        {filteredTransactions.map((tx) => {
+                                            const isNegative = tx.amount < 0;
+                                            return (
+                                                <div
+                                                    key={tx.id}
+                                                    onClick={() => setSelectedTx(tx)}
+                                                    className="flex items-center justify-between p-3 hover:bg-[#EDF2F1] rounded-xl cursor-pointer transition-all border border-transparent hover:border-[#E2EBE9]"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${
+                                                            isNegative
+                                                                ? "bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]"
+                                                                : "bg-[#E8F5F1] text-[#047857] border-[#A7F3D0]"
+                                                        }`}>
+                                                            <span className="material-symbols-outlined text-[22px]">{tx.icon}</span>
+                                                        </div>
+
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-sm text-[#0D2322]">
+                                                                    {tx.merchant}
+                                                                </span>
+                                                                {tx.cashback !== "₱0.00" && tx.cashback !== "Free" && (
+                                                                    <span className="px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#047857] text-[10px] font-bold border border-[#A7F3D0]">
+                                                                        {tx.cashback}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs text-[#566C6A]">
+                                                                {tx.date}, {tx.time} • {tx.paymentMethod}
+                                                            </span>
+                                                        </div>
                                                     </div>
 
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-bold text-xs sm:text-sm text-[#0D2322] dark:text-foreground">
-                                                                {tx.merchant}
-                                                            </span>
-                                                            {tx.cashback !== "₱0.00" && tx.cashback !== "Free" && (
-                                                                <span className="px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#059669] text-[10px] font-bold border border-[#BCE3D6]">
-                                                                    {tx.cashback}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <span className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                                            {tx.date}, {tx.time} • {tx.paymentMethod}
+                                                    <div className="text-right">
+                                                        <span className={`font-mono text-sm font-bold block ${
+                                                            isNegative ? "text-[#0D2322]" : "text-[#047857] font-extrabold"
+                                                        }`}>
+                                                            {isNegative ? "-" : "+"}₱{Math.abs(tx.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                        </span>
+                                                        <span className="text-[11px] text-[#047857] font-semibold flex items-center justify-end gap-1">
+                                                            <span className="material-symbols-outlined text-[14px]">check</span> {tx.status}
                                                         </span>
                                                     </div>
                                                 </div>
-
-                                                <div className="text-right">
-                                                    <span className={`font-mono text-sm font-bold block ${
-                                                        isNegative
-                                                            ? "text-[#0D2322] dark:text-foreground"
-                                                            : "text-[#059669] font-extrabold"
-                                                    }`}>
-                                                        {isNegative ? "-" : "+"}₱{Math.abs(tx.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                                                    </span>
-                                                    <span className="text-[11px] text-[#059669] font-semibold">
-                                                        ✓ {tx.status}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="py-12 px-4 text-center rounded-2xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col items-center justify-center">
+                                        <div className="w-12 h-12 rounded-xl bg-white border border-[#D3DEDB] flex items-center justify-center text-[#566C6A] mb-3 shadow-xs">
+                                            <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+                                        </div>
+                                        <h4 className="text-sm font-bold text-[#0D2322]">No Transactions Found</h4>
+                                        <p className="text-xs text-[#566C6A] mt-1 max-w-sm">
+                                            {txFilter === "all"
+                                                ? "Your wallet settlement history is currently clean. Transactions, smart card taps, and top-ups will appear here."
+                                                : `No ${txFilter === "in" ? "incoming credits" : "spending transactions"} recorded yet.`}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="pt-4 flex items-center justify-between border-t border-[#D3DEDB] dark:border-border mt-3 text-xs">
-                                <span className="text-[#566C6A] dark:text-muted-foreground">
-                                    Showing {filteredTransactions.length} of 38 transactions this month
+                            <div className="pt-4 flex items-center justify-between border-t border-[#D3DEDB] mt-3 text-xs">
+                                <span className="text-[#566C6A]">
+                                    Showing {filteredTransactions.length} of {transactions.length} transactions
                                 </span>
                                 <button
                                     type="button"
-                                    onClick={() => toast.success("PDF Statement Queued", { description: "Generating encrypted official monthly statement." })}
-                                    className="font-bold text-[#0D2322] dark:text-foreground hover:text-[#D97706] transition-colors flex items-center gap-1 cursor-pointer"
+                                    onClick={() => toast.success("PDF Statement Queued", { description: "Official account statement generated." })}
+                                    className="font-bold text-[#0D2322] hover:text-[#D97706] transition-colors flex items-center gap-1 cursor-pointer"
                                 >
-                                    <Download className="w-3.5 h-3.5" />
+                                    <span className="material-symbols-outlined text-[18px]">download</span>
                                     <span>Export PDF Statement</span>
                                 </button>
                             </div>
@@ -653,45 +558,37 @@ export function ConsumerWalletView() {
                 </div>
             )}
 
-            {/* ======================================================== */}
-            {/* TAB 2: SEND & REQUEST (P2P / QR PH) */}
-            {/* ======================================================== */}
+            {/* TAB 2: SEND & REQUEST */}
             {activeTab === "send" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
-                    {/* Left Form (7 Cols) */}
-                    <div className="lg:col-span-7 bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-7 bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col gap-4">
                         <div>
-                            <h2 className="text-lg font-bold text-[#0D2322] dark:text-foreground">
-                                Send Money Instantly
-                            </h2>
-                            <p className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                Zero transaction fees via InstaPay and ApexPay internal clearing rails.
-                            </p>
+                            <h2 className="text-lg font-bold text-[#0D2322]">Send Money Instantly</h2>
+                            <p className="text-xs text-[#566C6A]">Zero transaction fees via InstaPay and ApexPay P2P rails.</p>
                         </div>
 
                         <form onSubmit={handleP2pSubmit} className="flex flex-col gap-4">
                             <div>
-                                <label className="text-xs font-bold text-[#0D2322] dark:text-foreground block mb-1">
+                                <label className="text-xs font-bold text-[#0D2322] block mb-1">
                                     Recipient Mobile Number or ApexPay ID
                                 </label>
-                                <input
-                                    type="text"
-                                    value={p2pRecipient}
-                                    onChange={(e) => setP2pRecipient(e.target.value)}
-                                    placeholder="0917-XXX-XXXX or @username"
-                                    required
-                                    className="w-full h-11 px-4 rounded-xl bg-[#F4F7F6] dark:bg-muted/50 text-sm border border-[#D3DEDB] dark:border-border focus:border-[#D97706] focus:bg-white dark:focus:bg-card focus:outline-none transition-all"
-                                />
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-[#566C6A] text-[20px]">account_circle</span>
+                                    <input
+                                        type="text"
+                                        value={p2pRecipient}
+                                        onChange={(e) => setP2pRecipient(e.target.value)}
+                                        placeholder="0917-XXX-XXXX or @username"
+                                        required
+                                        className="w-full h-11 pl-11 pr-4 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-sm border border-[#D3DEDB] focus:border-[#D97706] focus:bg-white focus:outline-none transition-all font-medium"
+                                    />
+                                </div>
                             </div>
 
                             <div>
                                 <div className="flex items-center justify-between mb-1">
-                                    <label className="text-xs font-bold text-[#0D2322] dark:text-foreground">
-                                        Amount to Transfer
-                                    </label>
-                                    <span className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                        Avail: <strong>₱124,500.00</strong>
-                                    </span>
+                                    <label className="text-xs font-bold text-[#0D2322]">Amount to Transfer</label>
+                                    <span className="text-xs text-[#566C6A]">Avail: <strong className="text-[#0D2322]">₱{card.balance.toFixed(2)}</strong></span>
                                 </div>
                                 <div className="relative">
                                     <span className="absolute left-4 top-2 text-lg font-bold text-[#566C6A]">₱</span>
@@ -699,24 +596,24 @@ export function ConsumerWalletView() {
                                         type="number"
                                         step="0.01"
                                         min="1"
-                                        max="124500"
+                                        max={card.balance || 100000}
                                         value={p2pAmount}
                                         onChange={(e) => setP2pAmount(e.target.value)}
                                         placeholder="0.00"
                                         required
-                                        className="w-full h-12 pl-9 pr-24 rounded-xl bg-[#F4F7F6] dark:bg-muted/50 text-xl font-bold border border-[#D3DEDB] dark:border-border focus:border-[#D97706] focus:bg-white dark:focus:bg-card focus:outline-none transition-all font-mono"
+                                        className="w-full h-12 pl-9 pr-24 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xl font-bold border border-[#D3DEDB] focus:border-[#D97706] focus:bg-white focus:outline-none transition-all font-mono"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => setP2pAmount("1000")}
+                                        onClick={() => setP2pAmount("100")}
                                         className="absolute right-3 top-2.5 px-2.5 py-1 rounded-lg bg-[#FFF7ED] text-[#B45309] text-xs font-bold border border-[#FED7AA] hover:bg-[#FED7AA]/40 cursor-pointer"
                                     >
-                                        ₱1,000
+                                        ₱100
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="p-3 rounded-xl bg-[#E8F5F1] text-[#059669] border border-[#BCE3D6] flex items-center justify-between text-xs">
+                            <div className="p-3 rounded-xl bg-[#E8F5F1] text-[#047857] border border-[#A7F3D0] flex items-center justify-between text-xs">
                                 <span className="font-semibold">Transfer Fee</span>
                                 <span className="font-extrabold">FREE (Unlimited)</span>
                             </div>
@@ -725,29 +622,23 @@ export function ConsumerWalletView() {
                                 type="submit"
                                 className="w-full py-3 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white font-bold text-sm hover:brightness-105 shadow-md shadow-[#D97706]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                             >
-                                <Send className="w-4 h-4" />
+                                <span className="material-symbols-outlined text-[20px]">send</span>
                                 <span>Confirm and Send Now</span>
                             </button>
                         </form>
                     </div>
 
-                    {/* Right (5 Cols): QR Ph & Split Bill */}
                     <div className="lg:col-span-5 flex flex-col gap-6">
-                        {/* QR Ph National Card */}
-                        <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col items-center text-center">
-                            <div className="w-12 h-12 rounded-2xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center mb-2 border border-[#FED7AA]">
-                                <QrCode className="w-6 h-6" />
+                        {/* QR Ph Card */}
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col items-center text-center">
+                            <div className="w-14 h-14 rounded-2xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center mb-2 border border-[#FED7AA]">
+                                <span className="material-symbols-outlined text-[32px]">qr_code_2</span>
                             </div>
-                            <h3 className="font-bold text-base text-[#0D2322] dark:text-foreground">
-                                National QR Ph Standard
-                            </h3>
-                            <p className="text-xs text-[#566C6A] dark:text-muted-foreground mt-1">
-                                Interoperable scanning for all merchant terminals and consumer transfers.
-                            </p>
+                            <h3 className="font-bold text-base text-[#0D2322]">National QR Ph Standard</h3>
+                            <p className="text-xs text-[#566C6A] mt-1">Interoperable scanning for all merchant terminals and consumer transfers.</p>
 
-                            {/* Simulated Crisp QR Code */}
-                            <div className="w-44 h-44 bg-[#F4F7F6] dark:bg-muted/70 rounded-2xl flex items-center justify-center my-4 p-4 border border-[#D3DEDB] dark:border-border">
-                                <svg className="w-full h-full text-[#0D2322] dark:text-foreground" fill="currentColor" viewBox="0 0 100 100">
+                            <div className="w-44 h-44 bg-[#EDF2F1] rounded-2xl flex items-center justify-center my-4 p-4 border border-[#D3DEDB]">
+                                <svg className="w-full h-full text-[#0D2322]" fill="currentColor" viewBox="0 0 100 100">
                                     <rect x="10" y="10" width="24" height="24" rx="2" fill="none" stroke="currentColor" strokeWidth="4" />
                                     <rect x="16" y="16" width="12" height="12" />
                                     <rect x="66" y="10" width="24" height="24" rx="2" fill="none" stroke="currentColor" strokeWidth="4" />
@@ -772,44 +663,47 @@ export function ConsumerWalletView() {
                                 <button
                                     type="button"
                                     onClick={() => toast.info("Camera Initialized", { description: "Point device camera at any QR Ph merchant display." })}
-                                    className="flex-1 py-2 rounded-xl bg-[#F4F7F6] dark:bg-muted text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] dark:border-border cursor-pointer"
+                                    className="flex-1 py-2 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <Camera className="w-4 h-4 text-[#D97706]" />
-                                    <span>Scan Camera</span>
+                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">photo_camera</span>
+                                    <span>Scan</span>
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => toast.success("QR Saved", { description: "Personal QR Ph image saved to gallery." })}
-                                    className="flex-1 py-2 rounded-xl bg-[#F4F7F6] dark:bg-muted text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] dark:border-border cursor-pointer"
+                                    onClick={() => toast.success("QR Saved", { description: "Personal QR Ph code saved to gallery." })}
+                                    className="flex-1 py-2 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <Download className="w-4 h-4 text-[#D97706]" />
+                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">download</span>
                                     <span>Save QR</span>
                                 </button>
                             </div>
                         </div>
 
                         {/* Split the Bill Widget */}
-                        <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col justify-between">
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <h3 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Split the Bill</h3>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-[#D97706] text-[22px]">call_split</span>
+                                        <span className="font-bold text-sm text-[#0D2322]">Split the Bill</span>
+                                    </div>
                                     <span className="px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#B45309] text-[10px] font-bold border border-[#FED7AA]">
                                         P2P Group
                                     </span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 mt-3">
                                     <div>
-                                        <span className="text-[11px] text-[#566C6A] dark:text-muted-foreground font-semibold block mb-1">Total Bill</span>
+                                        <span className="text-[11px] text-[#566C6A] font-semibold block mb-1">Total Bill</span>
                                         <input
                                             type="number"
                                             value={splitTotal}
                                             onChange={(e) => setSplitTotal(e.target.value)}
-                                            className="w-full h-10 px-3 rounded-xl bg-[#F4F7F6] dark:bg-muted font-mono font-bold text-sm border border-[#D3DEDB] dark:border-border"
+                                            className="w-full h-10 px-3 rounded-xl bg-[#EDF2F1] font-mono font-bold text-sm border border-[#D3DEDB]"
                                         />
                                     </div>
                                     <div>
-                                        <span className="text-[11px] text-[#566C6A] dark:text-muted-foreground font-semibold block mb-1">Persons</span>
-                                        <div className="flex items-center h-10 px-3 rounded-xl bg-[#F4F7F6] dark:bg-muted justify-between border border-[#D3DEDB] dark:border-border text-xs font-bold">
+                                        <span className="text-[11px] text-[#566C6A] font-semibold block mb-1">People Split</span>
+                                        <div className="flex items-center h-10 px-3 rounded-xl bg-[#EDF2F1] justify-between border border-[#D3DEDB] text-xs font-bold">
                                             <span>{splitPeople} people</span>
                                             <span className="text-[#D97706]">₱{splitAmountEach.toFixed(2)} ea</span>
                                         </div>
@@ -820,360 +714,186 @@ export function ConsumerWalletView() {
                             <button
                                 type="button"
                                 onClick={() => toast.success("Split Request Dispatched", { description: `Payment links sent to ${splitPeople - 1} contacts for ₱${splitAmountEach.toFixed(2)} each.` })}
-                                className="mt-4 w-full py-2 rounded-xl bg-[#FFF7ED] text-[#B45309] text-xs font-bold hover:bg-[#D97706] hover:text-white transition-all border border-[#FED7AA] cursor-pointer"
+                                className="mt-4 w-full py-2.5 rounded-xl bg-[#FFF7ED] text-[#B45309] text-xs font-bold hover:bg-[#D97706] hover:text-white transition-all border border-[#FED7AA] cursor-pointer"
                             >
-                                Request ₱{splitAmountEach.toFixed(2)} from Friends
+                                Request ₱{splitAmountEach.toFixed(2)} from 3 Friends
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ======================================================== */}
             {/* TAB 3: BILLS & UTILITIES */}
-            {/* ======================================================== */}
             {activeTab === "bills" && (
-                <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <h2 className="text-xl font-bold text-[#0D2322] dark:text-foreground">Pay Bills & Utilities</h2>
-                            <p className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                Scheduled auto-debits, official e-receipts, and verified Philippine billers.
-                            </p>
+                            <h2 className="text-xl font-bold text-[#0D2322]">Pay Bills & Utilities</h2>
+                            <p className="text-xs text-[#566C6A]">Scheduled auto-debits, official e-receipts, and verified Philippine billers.</p>
                         </div>
                         <input
                             type="text"
                             placeholder="Search 600+ billers..."
-                            className="w-full md:w-80 h-10 px-4 rounded-xl bg-white dark:bg-card text-xs border border-[#D3DEDB] dark:border-border focus:outline-none focus:border-[#D97706]"
+                            className="w-full md:w-80 h-10 px-4 rounded-xl bg-white text-xs border border-[#D3DEDB] focus:outline-none focus:border-[#D97706]"
                         />
                     </div>
 
-                    {/* Scheduled Auto-Pays */}
-                    <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border">
+                    <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB]">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Upcoming Scheduled Bills</h3>
-                            <span className="text-xs text-[#059669] font-bold flex items-center gap-1">
-                                <CheckCircle2 className="w-4 h-4" /> Auto-Coverage Active
+                            <h3 className="font-bold text-sm text-[#0D2322]">Upcoming Scheduled Bills</h3>
+                            <span className="text-xs text-[#566C6A] font-bold flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[16px]">schedule</span> Automated Biller Queue
                             </span>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-2xl bg-[#F4F7F6] dark:bg-muted border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#B45309] text-[10px] font-bold">Electricity</span>
-                                        <span className="text-[10px] text-[#566C6A] font-bold">Due in 6 days</span>
-                                    </div>
-                                    <h4 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Meralco Manila</h4>
-                                    <span className="text-xs text-[#566C6A] block">Acct: 0991-2048-81</span>
-                                </div>
-                                <div className="mt-4 pt-3 flex items-center justify-between border-t border-[#D3DEDB] dark:border-border">
-                                    <span className="font-mono font-bold text-sm">Est. ₱4,800.00</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => toast.info("Auto-Pay Updated", { description: "Meralco bill preferences saved." })}
-                                        className="text-xs text-[#D97706] font-bold hover:underline cursor-pointer"
-                                    >
-                                        Edit Auto-Pay
-                                    </button>
-                                </div>
+                        <div className="py-10 px-4 text-center rounded-2xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 rounded-xl bg-white border border-[#D3DEDB] flex items-center justify-center text-[#566C6A] mb-2 shadow-xs">
+                                <span className="material-symbols-outlined text-[24px]">receipt_long</span>
                             </div>
-
-                            <div className="p-4 rounded-2xl bg-[#F4F7F6] dark:bg-muted border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#B45309] text-[10px] font-bold">Fiber Internet</span>
-                                        <span className="text-[10px] text-[#566C6A] font-bold">Due in 11 days</span>
-                                    </div>
-                                    <h4 className="font-bold text-sm text-[#0D2322] dark:text-foreground">PLDT Home Fibr</h4>
-                                    <span className="text-xs text-[#566C6A] block">Acct: 8812-4091-22</span>
-                                </div>
-                                <div className="mt-4 pt-3 flex items-center justify-between border-t border-[#D3DEDB] dark:border-border">
-                                    <span className="font-mono font-bold text-sm">₱2,399.00</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => toast.info("Auto-Pay Updated", { description: "PLDT bill preferences saved." })}
-                                        className="text-xs text-[#D97706] font-bold hover:underline cursor-pointer"
-                                    >
-                                        Edit Auto-Pay
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="p-4 rounded-2xl bg-[#F4F7F6] dark:bg-muted border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#B45309] text-[10px] font-bold">Water Supply</span>
-                                        <span className="text-[10px] text-[#566C6A] font-bold">Due in 18 days</span>
-                                    </div>
-                                    <h4 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Manila Water Co.</h4>
-                                    <span className="text-xs text-[#566C6A] block">Acct: MW-441-098</span>
-                                </div>
-                                <div className="mt-4 pt-3 flex items-center justify-between border-t border-[#D3DEDB] dark:border-border">
-                                    <span className="font-mono font-bold text-sm">Est. ₱640.00</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => toast.info("Auto-Pay Updated", { description: "Manila Water preferences saved." })}
-                                        className="text-xs text-[#D97706] font-bold hover:underline cursor-pointer"
-                                    >
-                                        Edit Auto-Pay
-                                    </button>
-                                </div>
-                            </div>
+                            <h4 className="text-sm font-bold text-[#0D2322]">No Upcoming Scheduled Bills</h4>
+                            <p className="text-xs text-[#566C6A] mt-1 max-w-sm">
+                                You do not have any pending bills or auto-debits scheduled. Search from 600+ verified billers below to enroll an account.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Category Selector Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <button
                             type="button"
-                            onClick={() => toast.info("Electricity Category", { description: "42 providers: Meralco, Visayan Electric, Davao Light, etc." })}
-                            className="p-5 rounded-2xl bg-white dark:bg-card border border-[#D3DEDB] dark:border-border hover:border-[#D97706]/50 transition-all text-left flex flex-col gap-2 group cursor-pointer"
+                            onClick={() => toast.info("Electricity Category", { description: "42 billers available." })}
+                            className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
-                                <Zap className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
+                                <span className="material-symbols-outlined text-[28px]">electric_bolt</span>
                             </div>
-                            <span className="font-bold text-sm text-[#0D2322] dark:text-foreground">Electricity</span>
+                            <span className="font-bold text-sm text-[#0D2322]">Electricity</span>
                             <span className="text-xs text-[#566C6A]">42 Billers Available</span>
                         </button>
 
                         <button
                             type="button"
-                            onClick={() => toast.info("Water Utilities", { description: "38 providers: Manila Water, Maynilad, Primewater, etc." })}
-                            className="p-5 rounded-2xl bg-white dark:bg-card border border-[#D3DEDB] dark:border-border hover:border-[#D97706]/50 transition-all text-left flex flex-col gap-2 group cursor-pointer"
+                            onClick={() => toast.info("Water Utilities", { description: "38 billers available." })}
+                            className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
-                                <Coins className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#B45309] flex items-center justify-center border border-[#FED7AA]">
+                                <span className="material-symbols-outlined text-[28px]">water_drop</span>
                             </div>
-                            <span className="font-bold text-sm text-[#0D2322] dark:text-foreground">Water Utilities</span>
+                            <span className="font-bold text-sm text-[#0D2322]">Water Utilities</span>
                             <span className="text-xs text-[#566C6A]">38 Billers Available</span>
                         </button>
 
                         <button
                             type="button"
-                            onClick={() => toast.info("Telecom & Fiber", { description: "25 providers: Globe, Smart, PLDT, Converge, DITO, etc." })}
-                            className="p-5 rounded-2xl bg-white dark:bg-card border border-[#D3DEDB] dark:border-border hover:border-[#D97706]/50 transition-all text-left flex flex-col gap-2 group cursor-pointer"
+                            onClick={() => toast.info("Telecom & Fiber", { description: "25 billers available." })}
+                            className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
-                                <Smartphone className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center border border-[#FED7AA]">
+                                <span className="material-symbols-outlined text-[28px]">wifi</span>
                             </div>
-                            <span className="font-bold text-sm text-[#0D2322] dark:text-foreground">Telecom & Fiber</span>
+                            <span className="font-bold text-sm text-[#0D2322]">Telecom & Fiber</span>
                             <span className="text-xs text-[#566C6A]">25 Billers Available</span>
                         </button>
 
                         <button
                             type="button"
-                            onClick={() => toast.info("Government Services", { description: "Official API sync: SSS, Pag-IBIG Fund, PhilHealth, BIR, DFA." })}
-                            className="p-5 rounded-2xl bg-white dark:bg-card border border-[#D3DEDB] dark:border-border hover:border-[#D97706]/50 transition-all text-left flex flex-col gap-2 group cursor-pointer"
+                            onClick={() => toast.info("Government Services", { description: "SSS, Pag-IBIG, PhilHealth, BIR." })}
+                            className="p-5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] hover:border-[#D97706]/40 transition-all text-left flex flex-col gap-2 group cursor-pointer"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-[#E8F5F1] text-[#059669] flex items-center justify-center border border-[#BCE3D6]">
-                                <Shield className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-xl bg-[#E8F5F1] text-[#047857] flex items-center justify-center border border-[#A7F3D0]">
+                                <span className="material-symbols-outlined text-[28px]">account_balance</span>
                             </div>
-                            <span className="font-bold text-sm text-[#0D2322] dark:text-foreground">Government</span>
+                            <span className="font-bold text-sm text-[#0D2322]">Government</span>
                             <span className="text-xs text-[#566C6A]">SSS, Pag-IBIG, BIR</span>
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* ======================================================== */}
-            {/* TAB 4: SAVINGS POCKETS (4.5% APY) */}
-            {/* ======================================================== */}
+            {/* TAB 4: SAVINGS POCKETS */}
             {activeTab === "savings" && (
-                <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-xl font-bold text-[#0D2322] dark:text-foreground">
-                                    High-Yield Savings Pockets
-                                </h2>
-                                <span className="px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#059669] text-xs font-extrabold border border-[#BCE3D6]">
+                                <h2 className="text-xl font-bold text-[#0D2322]">High-Yield Savings Pockets</h2>
+                                <span className="px-2.5 py-0.5 rounded-full bg-[#E8F5F1] text-[#047857] text-xs font-extrabold border border-[#A7F3D0]">
                                     4.5% APY
                                 </span>
                             </div>
-                            <p className="text-xs text-[#566C6A] dark:text-muted-foreground mt-0.5">
-                                Save towards dedicated personal milestones with daily compounding interest.
-                            </p>
+                            <p className="text-xs text-[#566C6A] mt-0.5">Save towards dedicated personal milestones with daily interest accrual.</p>
                         </div>
                         <button
                             type="button"
-                            onClick={() => toast.success("New Pocket Created", { description: "Added new high-yield savings pocket." })}
-                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white text-xs font-bold hover:brightness-105 shadow-sm shadow-[#D97706]/30 cursor-pointer self-start md:self-auto"
+                            onClick={() => toast.success("Goal Pocket Created", { description: "Created new savings pocket." })}
+                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white text-xs font-bold hover:brightness-105 shadow-md shadow-[#D97706]/25 cursor-pointer self-start md:self-auto"
                         >
                             + Create Goal Pocket
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Goal 1: Emergency Fund */}
-                        <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-2xl">🛡️</span>
-                                    <span className="px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#059669] text-[10px] font-bold border border-[#BCE3D6]">
-                                        +₱54.20 this mo
-                                    </span>
-                                </div>
-                                <h3 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Emergency Fund</h3>
-                                <p className="text-xs text-[#566C6A]">6 months runway buffer</p>
-
-                                <div className="my-4">
-                                    <div className="flex items-baseline justify-between mb-1 text-xs">
-                                        <span className="font-mono font-bold text-[#0D2322] dark:text-foreground text-sm">
-                                            ₱{emergencyFund.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                                        </span>
-                                        <span className="text-[#566C6A]">Goal: ₱50,000</span>
-                                    </div>
-                                    <div className="w-full h-2 rounded-full bg-[#F4F7F6] dark:bg-muted overflow-hidden">
-                                        <div className="h-full bg-[#059669] rounded-full" style={{ width: `${Math.min(100, (emergencyFund / 50000) * 100)}%` }} />
-                                    </div>
-                                    <span className="text-[10px] text-[#566C6A] block text-right mt-1 font-bold">
-                                        {Math.round((emergencyFund / 50000) * 100)}% completed
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setEmergencyFund((prev) => prev + 1000);
-                                    toast.success("Deposit Successful", { description: "Transferred ₱1,000 to Emergency Fund." });
-                                }}
-                                className="w-full py-2 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white text-xs font-bold hover:brightness-105 transition-all shadow-xs cursor-pointer"
-                            >
-                                Deposit ₱1,000
-                            </button>
+                    <div className="py-12 px-4 text-center rounded-2xl bg-[#F4F7F6] border border-[#D3DEDB] flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-[#D3DEDB] flex items-center justify-center text-[#D97706] mb-3 shadow-xs">
+                            <span className="material-symbols-outlined text-[24px]">savings</span>
                         </div>
-
-                        {/* Goal 2: Tokyo Trip */}
-                        <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-2xl">✈️</span>
-                                    <span className="px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#B45309] text-[10px] font-bold border border-[#FED7AA]">
-                                        Auto-save ₱2.5k/mo
-                                    </span>
-                                </div>
-                                <h3 className="font-bold text-sm text-[#0D2322] dark:text-foreground">Tokyo Autumn 2025</h3>
-                                <p className="text-xs text-[#566C6A]">Flights & Accommodation</p>
-
-                                <div className="my-4">
-                                    <div className="flex items-baseline justify-between mb-1 text-xs">
-                                        <span className="font-mono font-bold text-[#0D2322] dark:text-foreground text-sm">
-                                            ₱{tokyoTrip.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                                        </span>
-                                        <span className="text-[#566C6A]">Goal: ₱60,000</span>
-                                    </div>
-                                    <div className="w-full h-2 rounded-full bg-[#F4F7F6] dark:bg-muted overflow-hidden">
-                                        <div className="h-full bg-[#D97706] rounded-full" style={{ width: `${Math.min(100, (tokyoTrip / 60000) * 100)}%` }} />
-                                    </div>
-                                    <span className="text-[10px] text-[#566C6A] block text-right mt-1 font-bold">
-                                        {Math.round((tokyoTrip / 60000) * 100)}% completed
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setTokyoTrip((prev) => prev + 1000);
-                                    toast.success("Deposit Successful", { description: "Transferred ₱1,000 to Tokyo Trip." });
-                                }}
-                                className="w-full py-2 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white text-xs font-bold hover:brightness-105 transition-all shadow-xs cursor-pointer"
-                            >
-                                Deposit ₱1,000
-                            </button>
-                        </div>
-
-                        {/* Spare Change Round-up */}
-                        <div className="bg-gradient-to-br from-[#FFF7ED] to-[#F4F7F6] dark:from-card dark:to-muted rounded-2xl p-6 shadow-sm border border-[#FED7AA] flex flex-col justify-between">
-                            <div>
-                                <h3 className="font-bold text-sm text-[#0D2322] dark:text-foreground flex items-center gap-1.5">
-                                    <Coins className="w-4 h-4 text-[#D97706]" />
-                                    <span>Spare Change Round-Up</span>
-                                </h3>
-                                <p className="text-xs text-[#566C6A] mt-1">
-                                    Round up your daily payments to the nearest ₱50 and deposit the difference into your vault.
-                                </p>
-
-                                <div className="mt-4 p-3 bg-white dark:bg-card rounded-xl flex items-center justify-between border border-[#D3DEDB]">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-[#0D2322] dark:text-foreground">Auto Round-Up</span>
-                                        <span className="text-[10px] text-[#059669] font-extrabold">Active (₱50)</span>
-                                    </div>
-                                    <input
-                                        type="checkbox"
-                                        checked={autoRoundUpActive}
-                                        onChange={(e) => {
-                                            setAutoRoundUpActive(e.target.checked);
-                                            toast.info("Round-up preference updated");
-                                        }}
-                                        className="accent-[#D97706] h-4 w-4 cursor-pointer"
-                                    />
-                                </div>
-                            </div>
-
-                            <span className="text-xs text-[#566C6A] block mt-4 font-medium">
-                                Saved <strong className="text-[#0D2322] dark:text-foreground">₱1,420.00</strong> this month via round-ups.
-                            </span>
-                        </div>
+                        <h4 className="text-sm font-bold text-[#0D2322]">No Active Savings Goals</h4>
+                        <p className="text-xs text-[#566C6A] mt-1 max-w-sm">
+                            You currently have no savings pockets open. Click "+ Create Goal Pocket" to start setting aside funds with high-yield interest.
+                        </p>
                     </div>
                 </div>
             )}
 
-            {/* ======================================================== */}
-            {/* TAB 5: CARDS & SECURITY & SMART PASS RECHARGE */}
-            {/* ======================================================== */}
+            {/* TAB 5: CARDS & SECURITY */}
             {activeTab === "cards" && (
-                <div className="flex flex-col gap-8 animate-in fade-in duration-200">
+                <div className="flex flex-col gap-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         {/* Left Card Visualizer (6 Cols) */}
                         <div className="lg:col-span-6 flex flex-col gap-4">
                             <div>
-                                <h2 className="text-lg font-bold text-[#0D2322] dark:text-foreground">
-                                    Pine Slate Visa Platinum Debit
-                                </h2>
-                                <p className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                    Backed by real-time balance and zero foreign transaction markup.
-                                </p>
+                                <h2 className="text-lg font-bold text-[#0D2322]">Contactless Smart Card & Debit</h2>
+                                <p className="text-xs text-[#566C6A]">Backed by real-time balance and zero foreign transaction markup.</p>
                             </div>
 
-                            {/* Bespoke Physical/Virtual Card UI */}
+                            {/* Bespoke Spruce & Amber Debit Card */}
                             <div
-                                className="w-full h-56 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between border border-white/10"
+                                className="w-full h-56 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between border border-white/10"
                                 style={{
                                     background: "linear-gradient(135deg, #0A1C1B 0%, #0D2322 55%, #1B3F3D 100%)",
                                 }}
                             >
+                                <div className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full border border-[#D97706]/20 pointer-events-none" />
+                                <div className="absolute -right-20 -bottom-20 w-72 h-72 rounded-full border border-white/5 pointer-events-none" />
+
                                 <div className="relative z-10 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <span className="font-extrabold tracking-widest text-white text-base">ApexPay</span>
                                         <span className="px-2 py-0.5 rounded-md bg-[#D97706]/30 text-[#E07A1F] text-[10px] font-mono tracking-wider uppercase font-bold border border-[#D97706]/40">
-                                            Platinum
+                                            Smart Pass
                                         </span>
                                     </div>
-                                    <span className="text-xs text-white/80 font-mono">NFC Contactless</span>
+                                    <span className="material-symbols-outlined text-white/80 text-[24px]">contactless</span>
                                 </div>
 
                                 <div className="relative z-10 my-auto">
-                                    {/* EMV Chip */}
                                     <div className="w-10 h-7 rounded bg-gradient-to-tr from-amber-200 to-amber-500 opacity-90 mb-3 shadow-inner flex items-center justify-center">
                                         <div className="w-8 h-5 border border-amber-700/50 rounded-xs" />
                                     </div>
                                     <span className="font-mono text-xl tracking-widest text-white font-bold">
-                                        •••• •••• •••• 9928
+                                        •••• •••• •••• {card.cardUid.slice(-4)}
                                     </span>
                                 </div>
 
                                 <div className="relative z-10 flex items-center justify-between font-mono text-xs text-gray-300">
                                     <div>
-                                        <span className="block text-[8px] uppercase tracking-wider text-gray-400">Cardholder</span>
-                                        <span className="font-bold text-white">ELENA VANCE</span>
+                                        <span className="block text-[9px] uppercase tracking-wider text-gray-400">Cardholder</span>
+                                        <span className="font-bold text-white">CARDHOLDER</span>
                                     </div>
                                     <div>
-                                        <span className="block text-[8px] uppercase tracking-wider text-gray-400">Expires</span>
+                                        <span className="block text-[9px] uppercase tracking-wider text-gray-400">Expires</span>
                                         <span className="font-bold text-white">08/29</span>
                                     </div>
                                     <div>
-                                        <span className="block text-[8px] uppercase tracking-wider text-gray-400">CVV</span>
-                                        <span className="font-bold text-[#E07A1F] font-mono text-sm">{cvvDisplay}</span>
+                                        <span className="block text-[9px] uppercase tracking-wider text-gray-400">CVV</span>
+                                        <span className="font-bold text-white font-mono text-sm">{cvvDisplay}</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="font-black italic tracking-tighter text-[#E07A1F] text-lg">VISA</span>
@@ -1185,48 +905,39 @@ export function ConsumerWalletView() {
                                 <button
                                     type="button"
                                     onClick={handleRevealCvv}
-                                    className="flex-1 py-2.5 rounded-xl bg-[#F4F7F6] dark:bg-muted text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] dark:border-border cursor-pointer"
+                                    className="flex-1 py-2.5 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <Key className="w-4 h-4 text-[#D97706]" />
+                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">key</span>
                                     <span>
                                         {cvvSecondsLeft > 0 ? `CVV Active (${cvvSecondsLeft}s)` : "Reveal Dynamic CVV (60s)"}
                                     </span>
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => toast.success("Wallet Token Generated", { description: "Digital pass linked to Apple Wallet / Google Wallet." })}
-                                    className="flex-1 py-2.5 rounded-xl bg-[#F4F7F6] dark:bg-muted text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] dark:border-border cursor-pointer"
+                                    onClick={() => toast.success("Digital card linked to Apple/Google Wallet")}
+                                    className="flex-1 py-2.5 rounded-xl bg-[#EDF2F1] text-[#0D2322] text-xs font-bold hover:bg-[#FFF7ED] transition-colors flex items-center justify-center gap-1.5 border border-[#D3DEDB] cursor-pointer"
                                 >
-                                    <Smartphone className="w-4 h-4 text-[#D97706]" />
+                                    <span className="material-symbols-outlined text-[18px] text-[#D97706]">wallet</span>
                                     <span>Add to Wallet</span>
                                 </button>
                             </div>
                         </div>
 
                         {/* Right Security Toggles (6 Cols) */}
-                        <div className="lg:col-span-6 bg-white dark:bg-card rounded-2xl p-6 shadow-sm border border-[#D3DEDB] dark:border-border flex flex-col justify-between">
+                        <div className="lg:col-span-6 bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(13,35,34,0.03)] border border-[#D3DEDB] flex flex-col justify-between">
                             <div>
-                                <h3 className="text-base font-bold text-[#0D2322] dark:text-foreground mb-1">
-                                    Card Security Controls
-                                </h3>
-                                <p className="text-xs text-[#566C6A] dark:text-muted-foreground mb-4">
-                                    Instant freeze and selective payment channel restrictions.
-                                </p>
+                                <h3 className="text-base font-bold text-[#0D2322] mb-1">Card Security Toggles</h3>
+                                <p className="text-xs text-[#566C6A] mb-4">Instant freeze and selective channel restrictions.</p>
 
                                 <div className="flex flex-col gap-3">
-                                    {/* Freeze Toggle */}
-                                    <div className="flex items-center justify-between p-3 rounded-xl bg-[#F4F7F6] dark:bg-muted border border-[#D3DEDB] dark:border-border">
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB]">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center">
-                                                <Lock className="w-4 h-4" />
+                                            <div className="w-10 h-10 rounded-xl bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-[20px]">lock</span>
                                             </div>
                                             <div>
-                                                <span className="font-bold text-xs sm:text-sm text-[#0D2322] dark:text-foreground block">
-                                                    Freeze Card
-                                                </span>
-                                                <span className="text-[11px] text-[#566C6A]">
-                                                    Instantly block all new transactions
-                                                </span>
+                                                <span className="font-bold text-xs sm:text-sm text-[#0D2322] block">Freeze Card</span>
+                                                <span className="text-[11px] text-[#566C6A]">Instantly block all new transactions</span>
                                             </div>
                                         </div>
                                         <input
@@ -1236,28 +947,23 @@ export function ConsumerWalletView() {
                                                 const frozen = e.target.checked;
                                                 setCardSettings({ ...cardSettings, isFrozen: frozen });
                                                 if (frozen) {
-                                                    toast.error("Card Frozen", { description: "Visa Debit card blocked from processing new transactions." });
+                                                    toast.error("Card Frozen", { description: "Pine Slate Visa card is FROZEN." });
                                                 } else {
-                                                    toast.success("Card Active", { description: "Visa Debit card unblocked and ready for use." });
+                                                    toast.success("Card Active", { description: "Pine Slate Visa card unfrozen." });
                                                 }
                                             }}
                                             className="accent-[#DC2626] h-5 w-5 cursor-pointer"
                                         />
                                     </div>
 
-                                    {/* Online Payments */}
-                                    <div className="flex items-center justify-between p-3 rounded-xl bg-[#F4F7F6] dark:bg-muted border border-[#D3DEDB] dark:border-border">
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB]">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center">
-                                                <Globe className="w-4 h-4" />
+                                            <div className="w-10 h-10 rounded-xl bg-[#FFF7ED] text-[#D97706] flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
                                             </div>
                                             <div>
-                                                <span className="font-bold text-xs sm:text-sm text-[#0D2322] dark:text-foreground block">
-                                                    Online E-Commerce
-                                                </span>
-                                                <span className="text-[11px] text-[#566C6A]">
-                                                    Allow web and in-app checkout
-                                                </span>
+                                                <span className="font-bold text-xs sm:text-sm text-[#0D2322] block">Online Payments</span>
+                                                <span className="text-[11px] text-[#566C6A]">Permit online web checkout</span>
                                             </div>
                                         </div>
                                         <input
@@ -1265,25 +971,20 @@ export function ConsumerWalletView() {
                                             checked={cardSettings.onlinePayments}
                                             onChange={(e) => {
                                                 setCardSettings({ ...cardSettings, onlinePayments: e.target.checked });
-                                                toast.info("Online checkout settings updated");
+                                                toast.info("Online payments updated");
                                             }}
                                             className="accent-[#D97706] h-5 w-5 cursor-pointer"
                                         />
                                     </div>
 
-                                    {/* International Usage */}
-                                    <div className="flex items-center justify-between p-3 rounded-xl bg-[#F4F7F6] dark:bg-muted border border-[#D3DEDB] dark:border-border">
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-[#EDF2F1] border border-[#D3DEDB]">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-[#E8F5F1] text-[#059669] flex items-center justify-center">
-                                                <Globe className="w-4 h-4" />
+                                            <div className="w-10 h-10 rounded-xl bg-[#E8F5F1] text-[#047857] flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-[20px]">public</span>
                                             </div>
                                             <div>
-                                                <span className="font-bold text-xs sm:text-sm text-[#0D2322] dark:text-foreground block">
-                                                    Overseas POS / FX
-                                                </span>
-                                                <span className="text-[11px] text-[#566C6A]">
-                                                    Foreign currency in-store & ATM
-                                                </span>
+                                                <span className="font-bold text-xs sm:text-sm text-[#0D2322] block">Overseas Transactions</span>
+                                                <span className="text-[11px] text-[#566C6A]">Foreign currency in-store & POS</span>
                                             </div>
                                         </div>
                                         <input
@@ -1291,7 +992,7 @@ export function ConsumerWalletView() {
                                             checked={cardSettings.overseasTransactions}
                                             onChange={(e) => {
                                                 setCardSettings({ ...cardSettings, overseasTransactions: e.target.checked });
-                                                toast.info("Overseas usage settings updated");
+                                                toast.info("Overseas transaction settings saved");
                                             }}
                                             className="accent-[#D97706] h-5 w-5 cursor-pointer"
                                         />
@@ -1299,32 +1000,32 @@ export function ConsumerWalletView() {
                                 </div>
                             </div>
 
-                            <div className="pt-4 mt-2 border-t border-[#D3DEDB] dark:border-border flex items-center justify-between">
-                                <span className="text-xs text-[#566C6A]">Daily Spend Limit: ₱100,000</span>
+                            <div className="pt-4 mt-2 border-t border-[#D3DEDB] flex items-center justify-between">
+                                <span className="text-xs text-[#566C6A]">Daily Limit: Currently ₱100,000 / day</span>
                                 <button
                                     type="button"
-                                    onClick={() => toast.info("Daily limit adjustment prompt loaded")}
+                                    onClick={() => toast.info("Daily limit configuration loaded")}
                                     className="text-xs text-[#D97706] font-bold hover:underline cursor-pointer"
                                 >
-                                    Change Limit
+                                    Change
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     {/* Integrated DESFire EV3 Smart Card Top-up Engine */}
-                    <div className="pt-6 border-t border-[#D3DEDB] dark:border-border flex flex-col gap-6">
+                    <div className="pt-6 border-t border-[#D3DEDB] flex flex-col gap-6">
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-[#0D2322] dark:text-foreground">
-                                    NFC Transit & Campus Pass Direct Top-up
+                                <h3 className="text-lg font-bold text-[#0D2322]">
+                                    IoT Transit & Campus Pass Direct Top-up
                                 </h3>
-                                <span className="px-2 py-0.5 rounded-full bg-[#E8F5F1] text-[#059669] text-[10px] font-mono font-bold border border-[#BCE3D6]">
+                                <span className="px-2 py-0.5 rounded-md bg-[#EDF2F1] text-[#0D2322] text-[10px] font-mono font-bold border border-[#D3DEDB]">
                                     NFC DESFire EV3
                                 </span>
                             </div>
-                            <p className="text-xs text-[#566C6A] dark:text-muted-foreground mt-0.5">
-                                Instantly reload contactless physical smart cards and transit balances directly from your ApexPay account.
+                            <p className="text-xs text-[#566C6A] mt-0.5">
+                                Direct cloud clearing payment gateway for transit cards, campus IDs & contactless tap balances.
                             </p>
                         </div>
 

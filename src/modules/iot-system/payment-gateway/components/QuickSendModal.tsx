@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Send, User } from "lucide-react";
 import { toast } from "sonner";
 
 interface QuickSendModalProps {
@@ -66,45 +65,45 @@ export function QuickSendModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1C1B]/70 backdrop-blur-xs transition-opacity duration-200">
             <div className="fixed inset-0" onClick={onClose} />
 
-            <div className="relative z-10 w-full max-w-md bg-white dark:bg-card rounded-2xl p-6 shadow-2xl border border-[#D3DEDB] dark:border-border transform transition-all">
-                <div className="flex items-center justify-between pb-3 border-b border-[#D3DEDB] dark:border-border">
-                    <h3 className="text-lg font-bold text-[#0D2322] dark:text-foreground">
+            <div className="relative z-10 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#D3DEDB] transform transition-all">
+                <div className="flex items-center justify-between pb-3 border-b border-[#D3DEDB]">
+                    <h3 className="text-lg font-bold text-[#0D2322]">
                         Send Money
                     </h3>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[#566C6A] hover:bg-[#F4F7F6] dark:hover:bg-muted transition-colors"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[#566C6A] hover:bg-[#F4F7F6] transition-colors cursor-pointer"
                     >
-                        <X className="w-5 h-5" />
+                        <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
                     <div>
-                        <label className="text-xs font-bold uppercase tracking-wider text-[#566C6A] dark:text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[#566C6A] block mb-1">
                             To Recipient
                         </label>
                         <div className="relative">
-                            <User className="absolute left-3.5 top-3 w-4 h-4 text-[#566C6A]" />
+                            <span className="material-symbols-outlined absolute left-3.5 top-3 text-[18px] text-[#566C6A]">person</span>
                             <input
                                 type="text"
                                 value={recipient}
                                 onChange={(e) => setRecipient(e.target.value)}
                                 placeholder="0917-XXX-XXXX or contact name"
                                 required
-                                className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#F4F7F6] dark:bg-muted/50 text-[#0D2322] dark:text-foreground text-sm border border-[#D3DEDB] dark:border-border focus:border-[#D97706] focus:bg-white dark:focus:bg-card focus:outline-none transition-all font-medium"
+                                className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#F4F7F6] text-[#0D2322] text-sm border border-[#D3DEDB] focus:border-[#D97706] focus:bg-white focus:outline-none transition-all font-medium"
                             />
                         </div>
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-bold uppercase tracking-wider text-[#566C6A] dark:text-muted-foreground">
+                            <label className="text-xs font-bold uppercase tracking-wider text-[#566C6A]">
                                 Amount (PHP)
                             </label>
-                            <span className="text-xs text-[#566C6A] dark:text-muted-foreground">
-                                Max Avail: <strong className="text-[#0D2322] dark:text-foreground">₱124,500.00</strong>
+                            <span className="text-xs text-[#566C6A]">
+                                Max Avail: <strong className="text-[#0D2322]">₱124,500.00</strong>
                             </span>
                         </div>
                         <div className="relative">
@@ -118,13 +117,13 @@ export function QuickSendModal({
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="0.00"
                                 required
-                                className="w-full h-12 pl-9 pr-4 rounded-xl bg-[#F4F7F6] dark:bg-muted/50 text-[#0D2322] dark:text-foreground text-xl font-bold border border-[#D3DEDB] dark:border-border focus:border-[#D97706] focus:bg-white dark:focus:bg-card focus:outline-none transition-all font-mono"
+                                className="w-full h-12 pl-9 pr-4 rounded-xl bg-[#F4F7F6] text-[#0D2322] text-xl font-bold border border-[#D3DEDB] focus:border-[#D97706] focus:bg-white focus:outline-none transition-all font-mono"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold uppercase tracking-wider text-[#566C6A] dark:text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[#566C6A] block mb-1">
                             Optional Message / Purpose
                         </label>
                         <input
@@ -132,15 +131,15 @@ export function QuickSendModal({
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                             placeholder="e.g. Lunch split, Groceries, Project payment"
-                            className="w-full h-11 px-4 rounded-xl bg-[#F4F7F6] dark:bg-muted/50 text-[#0D2322] dark:text-foreground text-sm border border-[#D3DEDB] dark:border-border focus:border-[#D97706] focus:bg-white dark:focus:bg-card focus:outline-none transition-all"
+                            className="w-full h-11 px-4 rounded-xl bg-[#F4F7F6] text-[#0D2322] text-sm border border-[#D3DEDB] focus:border-[#D97706] focus:bg-white focus:outline-none transition-all"
                         />
                     </div>
 
-                    <div className="p-3 rounded-xl bg-[#E8F5F1] dark:bg-emerald-950/30 border border-[#BCE3D6] dark:border-emerald-800/40 flex items-center justify-between text-xs">
-                        <span className="text-[#059669] dark:text-emerald-300 font-semibold">
+                    <div className="p-3 rounded-xl bg-[#E8F5F1] border border-[#BCE3D6] flex items-center justify-between text-xs">
+                        <span className="text-[#059669] font-semibold">
                             InstaPay / P2P Rails Fee
                         </span>
-                        <span className="text-[#059669] dark:text-emerald-300 font-extrabold">
+                        <span className="text-[#059669] font-extrabold">
                             FREE (0.00)
                         </span>
                     </div>
@@ -149,7 +148,7 @@ export function QuickSendModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 py-2.5 rounded-xl bg-[#F4F7F6] dark:bg-muted text-[#0D2322] dark:text-foreground font-bold text-sm hover:bg-[#EDF4F2] transition-colors border border-[#D3DEDB] dark:border-border cursor-pointer"
+                            className="flex-1 py-2.5 rounded-xl bg-[#F4F7F6] text-[#0D2322] font-bold text-sm hover:bg-[#EDF4F2] transition-colors border border-[#D3DEDB] cursor-pointer"
                         >
                             Cancel
                         </button>
@@ -158,7 +157,7 @@ export function QuickSendModal({
                             disabled={isSubmitting}
                             className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#D97706] to-[#E07A1F] text-white font-bold text-sm hover:brightness-105 transition-all shadow-md shadow-[#D97706]/30 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                         >
-                            <Send className="w-4 h-4" />
+                            <span className="material-symbols-outlined text-[18px]">send</span>
                             <span>{isSubmitting ? "Transferring..." : "Confirm & Send"}</span>
                         </button>
                     </div>

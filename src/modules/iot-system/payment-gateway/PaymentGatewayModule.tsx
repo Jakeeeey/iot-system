@@ -49,7 +49,7 @@ function PaymentGatewayInner() {
             />
 
             {/* Render Selected Portal Suite */}
-            <div className="w-full">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-12">
                 {activePortal === "consumer-wallet" && <ConsumerWalletView />}
                 {activePortal === "merchant-portal" && <MerchantPortalView />}
                 {activePortal === "ops-console" && <OpsConsoleView />}

@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import { Radio } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { SmartCardInfo } from "../types";
 
 interface SmartCardVisualizerProps {
@@ -13,48 +11,48 @@ interface SmartCardVisualizerProps {
 
 export function SmartCardVisualizer({ card, amount, projectedBalance }: SmartCardVisualizerProps) {
     return (
-        <div className="relative overflow-hidden rounded-2xl p-6 sm:p-7 border border-cyan-500/30 bg-gradient-to-br from-slate-900 via-[#0d121f] to-slate-950 text-white shadow-xl shadow-cyan-950/20">
-            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-0 right-0 p-6 opacity-30">
-                <Radio className="h-16 w-16 text-cyan-400" />
+        <div className="relative overflow-hidden rounded-2xl p-6 sm:p-7 border border-[#163331] bg-gradient-to-br from-[#0A1C1B] via-[#0D2322] to-[#163331] text-white shadow-xl shadow-[#0A1C1B]/30">
+            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-[#D97706]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 p-6 opacity-20">
+                <span className="material-symbols-outlined text-[72px] text-white">contactless</span>
             </div>
 
             <div className="relative z-10 flex flex-col justify-between h-48">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="h-7 w-9 rounded-md bg-amber-400/90 border border-amber-300 shadow-xs flex items-center justify-center">
-                            <div className="w-5 h-4 border border-amber-600/60 rounded-xs grid grid-cols-2 gap-0.5 p-0.5">
-                                <div className="bg-amber-600/40 rounded-xs" />
-                                <div className="bg-amber-600/40 rounded-xs" />
+                        <div className="h-7 w-9 rounded-md bg-[#F59E0B] border border-[#FDE68A] shadow-xs flex items-center justify-center">
+                            <div className="w-5 h-4 border border-[#B45309]/60 rounded-xs grid grid-cols-2 gap-0.5 p-0.5">
+                                <div className="bg-[#B45309]/40 rounded-xs" />
+                                <div className="bg-[#B45309]/40 rounded-xs" />
                             </div>
                         </div>
-                        <span className="text-xs font-black tracking-widest text-cyan-400 uppercase">
+                        <span className="text-xs font-black tracking-widest text-[#FED7AA] uppercase">
                             {card.cardType}
                         </span>
                     </div>
-                    <Badge variant="outline" className="text-[9px] font-mono border-cyan-400/30 text-cyan-300 bg-cyan-950/40">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-[#059669]/40 text-[#6EE7B7] bg-[#059669]/20 font-bold">
                         {card.status} NFC
-                    </Badge>
+                    </span>
                 </div>
 
                 <div>
-                    <div className="text-[11px] font-mono text-cyan-200/60 uppercase tracking-widest">Card UID</div>
-                    <div className="font-mono text-sm tracking-wider font-semibold text-slate-200 mt-0.5">
+                    <div className="text-[11px] font-mono text-gray-300 uppercase tracking-widest">Card UID</div>
+                    <div className="font-mono text-sm tracking-wider font-semibold text-white mt-0.5">
                         {card.cardUid}
                     </div>
                 </div>
 
                 <div className="flex items-end justify-between">
                     <div>
-                        <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Current Balance</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-gray-400">Current Balance</div>
                         <div className="text-3xl font-black tracking-tight text-white font-mono">
                             ₱{card.balance.toFixed(2)}
                         </div>
                     </div>
                     {amount > 0 && (
                         <div className="text-right">
-                            <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">Projected Balance</div>
-                            <div className="text-xl font-black text-emerald-400 font-mono">
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-[#6EE7B7]">Projected Balance</div>
+                            <div className="text-xl font-black text-[#6EE7B7] font-mono">
                                 &rarr; ₱{projectedBalance.toFixed(2)}
                             </div>
                         </div>

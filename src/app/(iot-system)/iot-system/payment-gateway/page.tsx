@@ -16,21 +16,23 @@ import { PaymentGatewayModule } from "@/modules/iot-system/payment-gateway";
 
 export default function PaymentGatewayPage() {
     return (
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            {/* Topbar */}
-            <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b shadow-xs bg-background sm:h-16 overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#F4F7F6] apexpay-portal">
+            {/* System Top Breadcrumb Bar */}
+            <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-[#D3DEDB] bg-white sm:h-16 overflow-hidden">
                 <div className="flex h-full min-w-0 items-center gap-2 px-3 sm:px-4 overflow-hidden">
-                    <SidebarTrigger className="-ml-1 shrink-0" />
-                    <Separator orientation="vertical" className="hidden sm:block mr-2 data-[orientation=vertical]:h-4 shrink-0" />
+                    <SidebarTrigger className="-ml-1 shrink-0 text-[#0D2322]" />
+                    <Separator orientation="vertical" className="hidden sm:block mr-2 data-[orientation=vertical]:h-4 shrink-0 bg-[#D3DEDB]" />
                     <div className="min-w-0 overflow-hidden">
                         <Breadcrumb>
-                            <BreadcrumbList className="min-w-0 overflow-hidden">
+                            <BreadcrumbList className="min-w-0 overflow-hidden text-[#566C6A]">
                                 <BreadcrumbItem className="hidden md:block shrink-0">
-                                    <BreadcrumbLink href="/iot-system">IoT System</BreadcrumbLink>
+                                    <BreadcrumbLink href="/iot-system" className="text-[#566C6A] hover:text-[#0D2322]">
+                                        IoT System
+                                    </BreadcrumbLink>
                                 </BreadcrumbItem>
-                                <BreadcrumbSeparator className="hidden md:block shrink-0" />
+                                <BreadcrumbSeparator className="hidden md:block shrink-0 text-[#8B9F9D]" />
                                 <BreadcrumbItem className="min-w-0 overflow-hidden">
-                                    <BreadcrumbPage className="truncate max-w-[56vw] sm:max-w-[60vw] md:max-w-none font-bold">
+                                    <BreadcrumbPage className="truncate max-w-[56vw] sm:max-w-[60vw] md:max-w-none font-bold text-[#0D2322]">
                                         ApexPay Unified Gateway
                                     </BreadcrumbPage>
                                 </BreadcrumbItem>
@@ -40,12 +42,12 @@ export default function PaymentGatewayPage() {
                 </div>
 
                 <div className="flex h-full items-center px-2 sm:px-4 shrink-0 max-w-[48vw] sm:max-w-none overflow-hidden">
-                    <NavUser user={{ name: "IoT Engineer", email: "dev@iot.local", avatar: "/avatars/shadcn.jpg" }} />
+                    <NavUser user={{ name: "IoT Engineer", email: "dev@iot.local" }} />
                 </div>
             </header>
 
-            {/* Main Content View */}
-            <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            {/* Main Content View with locked porcelain background */}
+            <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[#F4F7F6]">
                 <PaymentGatewayModule />
             </main>
         </div>
