@@ -9,6 +9,7 @@ export interface MapEPayHeaderProps {
     onSelectPortal: (portal: PaymentPortalType) => void;
     mode: EnvironmentMode;
     onToggleMode: (mode: EnvironmentMode) => void;
+    onOpenMatrixModal?: () => void;
 }
 
 export function MapEPayHeader({
@@ -16,6 +17,7 @@ export function MapEPayHeader({
     onSelectPortal,
     mode,
     onToggleMode,
+    onOpenMatrixModal,
 }: MapEPayHeaderProps) {
     const isConsumer = activePortal === "consumer-wallet";
     const userName = isConsumer ? "IoT Account Holder" : "System Operator";
@@ -80,12 +82,27 @@ export function MapEPayHeader({
                                 : "text-[#566C6A] hover:text-[#0D2322] hover:bg-white/60"
                         }`}
                     >
-                        Ops & Admin Console
+                        Ops &amp; Admin Console
                     </button>
                 </nav>
 
-                {/* Right controls: LIVE/SANDBOX, notifications, user badge */}
+                {/* Right controls: Feature Catalog, LIVE/SANDBOX, notifications, user badge */}
                 <div className="flex items-center gap-3 shrink-0">
+                    {onOpenMatrixModal && (
+                        <button
+                            type="button"
+                            onClick={onOpenMatrixModal}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0D2322] text-white text-xs font-bold hover:bg-[#163331] transition-all shadow-xs cursor-pointer"
+                            title="Master Feature Inventory (87 items)"
+                        >
+                            <PaymentIcon name="inventory_2" className="w-3.5 h-3.5 text-[#D97706]" />
+                            <span className="hidden sm:inline">Feature Catalog</span>
+                            <span className="px-1.5 py-0.2 rounded bg-[#D97706] text-[#0D2322] text-[10px] font-extrabold font-mono">
+                                87
+                            </span>
+                        </button>
+                    )}
+
                     <div className="flex items-center bg-[#EDF2F1] rounded-lg p-0.5 border border-[#D3DEDB]">
                         <button
                             type="button"

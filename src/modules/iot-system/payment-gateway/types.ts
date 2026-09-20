@@ -215,3 +215,97 @@ export interface AuditTapeEvent {
     description: string;
     statusIcon: "check" | "warning" | "sync";
 }
+
+// ==========================================
+// Master Feature Inventory Types (87 Items)
+// ==========================================
+export type DashboardSurface = "User" | "Merchant" | "Admin/Ops" | "System";
+
+export type FeatureSectionKey =
+    | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I"
+    | "J" | "K" | "L" | "M";
+
+export interface MasterFeatureItem {
+    id: string; // e.g. "A.1", "J.3"
+    sectionKey: FeatureSectionKey;
+    sectionTitle: string;
+    part: "Part I — Consumer-Facing" | "Part II — Merchant & Developer" | "Part III — Backend & Processing";
+    title: string;
+    description: string;
+    dashboards: DashboardSurface[];
+    operatingSurfaceBadge: string;
+    status: "Implemented" | "Active Rail" | "Compliant";
+    actionLabel?: string;
+}
+
+// Extended KYC Tiering & Limit Models
+export type KYCTier = "Basic" | "Fully Verified";
+
+export interface KYCTierLimits {
+    tier: KYCTier;
+    dailyLimit: number;
+    monthlyLimit: number;
+    perTxLimit: number;
+    interbankLimit: number;
+    maxDailyTransactions: number;
+    contactlessCeiling: number; // ₱2,000 without PIN
+}
+
+// Double Entry Ledger Models (Sec. K.2)
+export interface DoubleEntryJournalEntry {
+    id: string;
+    timestamp: string;
+    description: string;
+    debitAccount: string;
+    creditAccount: string;
+    amount: number;
+    currency: string;
+    idempotencyKey: string;
+    signature: string;
+}
+
+// 3-Way Reconciliation Pipeline (Sec. L.3)
+export interface ReconciliationReportItem {
+    id: string;
+    rail: "InstaPay" | "PESONet" | "Visa/Mastercard" | "QR Ph P2M";
+    windowDate: string;
+    ledgerCount: number;
+    ledgerAmount: number;
+    bankSwitchCount: number;
+    bankSwitchAmount: number;
+    variance: number;
+    status: "Balanced" | "Variance Flagged" | "Auto-Settled";
+}
+
+// Micro-Loan & Credit Line (Sec. G.1)
+export interface MicroLoanLine {
+    creditLimit: number;
+    availableCredit: number;
+    interestRateMonthly: number;
+    historicalVelocityScore: number; // 0 - 100
+    status: "Active" | "Pre-Approved" | "Underwriting";
+}
+
+// Merchant RBAC (Sec. J.2)
+export type MerchantRBACRole = "cashier" | "accountant" | "administrator";
+
+// Bulk Payroll Batch (Sec. J.8)
+export interface BulkPayrollItem {
+    id: string;
+    batchRef: string;
+    recipientCount: number;
+    totalPayroll: number;
+    rail: "InstaPay Direct" | "Internal Wallet Transfer";
+    scheduledDate: string;
+    status: "Queued" | "Processing" | "Disbursed";
+}
+
+// Webhook Dispatch Log (Sec. J.6)
+export interface WebhookLogItem {
+    id: string;
+    event: string;
+    targetEndpoint: string;
+    payloadHash: string;
+    status: "200 OK" | "408 Timeout" | "500 Error";
+    deliveredAt: string;
+}

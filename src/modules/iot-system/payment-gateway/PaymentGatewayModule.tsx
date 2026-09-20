@@ -8,6 +8,7 @@ import { MapEPayHeader } from "./components/MapEPayHeader";
 import { ConsumerWalletView } from "./components/ConsumerWalletView";
 import { MerchantPortalView } from "./components/MerchantPortalView";
 import { OpsConsoleView } from "./components/OpsConsoleView";
+import { MasterFeatureMatrixModal } from "./components/MasterFeatureMatrixModal";
 
 function PaymentGatewayInner() {
     const searchParams = useSearchParams();
@@ -20,6 +21,7 @@ function PaymentGatewayInner() {
     const activePortal = isValidPortal ? portalParam : selectedPortal;
 
     const [mode, setMode] = useState<EnvironmentMode>("LIVE");
+    const [isMatrixModalOpen, setIsMatrixModalOpen] = useState(false);
 
     const handleSelectPortal = (portal: PaymentPortalType) => {
         setSelectedPortal(portal);
@@ -36,6 +38,7 @@ function PaymentGatewayInner() {
                 onSelectPortal={handleSelectPortal}
                 mode={mode}
                 onToggleMode={setMode}
+                onOpenMatrixModal={() => setIsMatrixModalOpen(true)}
             />
 
             {/* Render Selected Portal Suite */}
@@ -44,6 +47,13 @@ function PaymentGatewayInner() {
                 {activePortal === "merchant-portal" && <MerchantPortalView />}
                 {activePortal === "ops-console" && <OpsConsoleView />}
             </div>
+
+            {/* Master Feature Inventory Modal (87 Items) */}
+            <MasterFeatureMatrixModal
+                isOpen={isMatrixModalOpen}
+                onClose={() => setIsMatrixModalOpen(false)}
+                onNavigateSurface={handleSelectPortal}
+            />
         </div>
     );
 }
