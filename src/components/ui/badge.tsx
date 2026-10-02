@@ -18,6 +18,12 @@ const badgeVariants = cva(
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         link: "text-primary underline-offset-4 [a&]:hover:underline",
+        success: "border-emerald-500/20 bg-emerald-500/10 text-emerald-500",
+        warning: "border-amber-500/20 bg-amber-500/10 text-amber-500",
+        info: "border-cyan-500/20 bg-cyan-500/10 text-cyan-500",
+        solar: "border-amber-500/30 bg-amber-500/10 text-amber-500",
+        battery: "border-cyan-500/30 bg-cyan-500/10 text-cyan-500",
+        grid: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
       },
     },
     defaultVariants: {

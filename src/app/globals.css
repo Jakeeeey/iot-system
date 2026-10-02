@@ -69,6 +69,23 @@
   --info-foreground: 0 0% 100%;
   --info-bg: 199 89% 95%;
 
+  /* ===== Solar & Energy Domain Tokens (Light) ===== */
+  --solar: 38 92% 50%;
+  --solar-foreground: 20 14% 4%;
+  --solar-bg: 38 92% 95%;
+
+  --battery: 188 86% 42%;
+  --battery-foreground: 0 0% 100%;
+  --battery-bg: 188 86% 94%;
+
+  --grid: 142 71% 42%;
+  --grid-foreground: 0 0% 100%;
+  --grid-bg: 142 71% 94%;
+
+  --load: 243 75% 58%;
+  --load-foreground: 0 0% 100%;
+  --load-bg: 243 75% 96%;
+
   /* Sidebar */
   --sidebar: 240 6% 97.5%;
   --sidebar-foreground: 240 5% 26%;
@@ -141,6 +158,23 @@
   --info-foreground: 0 0% 100%;
   --info-bg: 199 30% 12%;
 
+  /* ===== Solar & Energy Domain Tokens (Dark) ===== */
+  --solar: 42 96% 54%;
+  --solar-foreground: 20 14% 4%;
+  --solar-bg: 42 96% 12%;
+
+  --battery: 188 86% 52%;
+  --battery-foreground: 0 0% 100%;
+  --battery-bg: 188 86% 12%;
+
+  --grid: 142 71% 50%;
+  --grid-foreground: 0 0% 100%;
+  --grid-bg: 142 71% 10%;
+
+  --load: 243 75% 68%;
+  --load-foreground: 0 0% 100%;
+  --load-bg: 243 75% 14%;
+
   /* Sidebar */
   --sidebar: 240 6% 7.5%;
   --sidebar-foreground: 240 5% 92%;
@@ -200,6 +234,15 @@
   --color-info: hsl(var(--info));
   --color-info-foreground: hsl(var(--info-foreground));
   --color-info-bg: hsl(var(--info-bg));
+
+  --color-solar: hsl(var(--solar));
+  --color-solar-foreground: hsl(var(--solar-foreground));
+  --color-battery: hsl(var(--battery));
+  --color-battery-foreground: hsl(var(--battery-foreground));
+  --color-grid: hsl(var(--grid));
+  --color-grid-foreground: hsl(var(--grid-foreground));
+  --color-load: hsl(var(--load));
+  --color-load-foreground: hsl(var(--load-foreground));
 
   --radius: var(--radius);
 

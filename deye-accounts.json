@@ -1,0 +1,327 @@
+{
+  "accounts": [
+    {
+      "id": "men2-facility-1",
+      "directusId": "1",
+      "name": "Hanvin Solar",
+      "enabled": true,
+      "admin": true,
+      "baseUrl": "https://eu1-developer.deyecloud.com",
+      "appId": "202609171070002",
+      "appSecret": "1217a6e30770caebc163f79b2161170a",
+      "email": "hanvinsolar@gmail.com",
+      "password": "Hanvinsolar123",
+      "defaultStationId": "61825217",
+      "defaultDeviceSn": "2408124366",
+      "autoDiscovered": true,
+      "lastSyncedAt": "2026-10-02T03:28:50.357Z",
+      "plants": [
+        {
+          "stationId": "61825217",
+          "stationName": "Men 2 office",
+          "installedCapacityKw": 100,
+          "address": "Bonuan boquig dagupan",
+          "devices": [
+            {
+              "deviceSn": "2993039067",
+              "deviceType": "LOGGER",
+              "name": "Deye Smart Collector Logger (2993039067)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2408124366",
+              "deviceType": "INVERTER",
+              "name": "Deye Hybrid Inverter (2408124366)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3107207809",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3107207809)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2408270126",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2408270126)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            }
+          ]
+        },
+        {
+          "stationId": "62112170",
+          "stationName": "La Salette School",
+          "installedCapacityKw": 100,
+          "address": "Dagupan City ",
+          "devices": [
+            {
+              "deviceSn": "3153582349",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3153582349)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2505174004",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2505174004)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3153562173",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3153562173)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2505173026",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2505173026)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3156564884",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3156564884)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2505173217",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2505173217)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3156314428",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3156314428)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2506022539",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2506022539)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3156908928",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3156908928)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2506213506",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2506213506)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2410297092",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2410297092)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3158062232",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3158062232)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3158799188",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3158799188)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "STANDBY",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2505173032",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2505173032)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "STANDBY",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3162981146",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3162981146)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2506022520",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2506022520)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3162542890",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3162542890)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2506022826",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2506022826)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "3162761908",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (3162761908)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2506022436",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2506022436)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            }
+          ]
+        },
+        {
+          "stationId": "62316274",
+          "stationName": "Men 2 Warehouse (Planta)",
+          "installedCapacityKw": 100,
+          "address": "Dagupan",
+          "devices": [
+            {
+              "deviceSn": "D258091220B0",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (D258091220B0)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2509281198",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2509281198)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "2509281210",
+              "deviceType": "INVERTER",
+              "name": "Deye Inverter (2509281210)",
+              "model": "SUN-100K-SG01HP3-EU-AM2",
+              "ratedKw": 100,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            },
+            {
+              "deviceSn": "D25810221140",
+              "deviceType": "LOGGER",
+              "name": "Deye Collector/Logger (D25810221140)",
+              "model": "Deye Smart Collector Logger",
+              "ratedKw": 0,
+              "loggerSn": null,
+              "status": "ONLINE",
+              "lastSeen": null
+            }
+          ]
+        }
+      ],
+      "source": "directus"
+    }
+  ]
+}

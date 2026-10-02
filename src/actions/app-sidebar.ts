@@ -48,6 +48,76 @@ interface TempNavItem extends NavItem {
     items: TempNavItem[];
 }
 
+export const DSM_NAV_ITEM: NavItem = {
+    title: "DSM",
+    url: "/iot-system/dsm",
+    slug: "dsm",
+    status: "active",
+    iconName: "Sun",
+    items: [
+        {
+            title: "Energy Flow & Fleet",
+            url: "/iot-system/dsm",
+            slug: "dsm-energy-flow",
+            status: "active",
+            iconName: "Zap",
+        },
+        {
+            title: "Accounts & Plants",
+            url: "/iot-system/dsm/accounts",
+            slug: "dsm-accounts",
+            status: "active",
+            iconName: "Building2",
+        },
+        {
+            title: "Hardware Telemetry",
+            url: "/iot-system/dsm/hardware-telemetry",
+            slug: "dsm-hardware-telemetry",
+            status: "active",
+            iconName: "Sliders",
+        },
+        {
+            title: "Yield & Arbitrage",
+            url: "/iot-system/dsm/yield-arbitrage",
+            slug: "dsm-yield-arbitrage",
+            status: "active",
+            iconName: "TrendingUp",
+        },
+        {
+            title: "Trigonometric Analytics",
+            url: "/iot-system/dsm/trigonometric-analytics",
+            slug: "dsm-trigonometric-analytics",
+            status: "active",
+            iconName: "Activity",
+        },
+        {
+            title: "API & Diagnostics",
+            url: "/iot-system/dsm/api-diagnostics",
+            slug: "dsm-api-diagnostics",
+            status: "active",
+            iconName: "ShieldCheck",
+        },
+    ],
+};
+
+export const DEFAULT_IOT_SYSTEM_NAV: NavItem[] = [
+    DSM_NAV_ITEM,
+    {
+        title: "PDF Layout Designer",
+        url: "/iot-system/pdf-test",
+        slug: "pdf-test",
+        status: "active",
+        iconName: "FileText",
+    },
+    {
+        title: "Settings",
+        url: "/iot-system/settings",
+        slug: "settings",
+        status: "active",
+        iconName: "Settings",
+    },
+];
+
 /**
  * Fetches the sidebar navigation tree for a specific subsystem.
  * Uses a hybrid approach:
@@ -59,7 +129,9 @@ export async function getSidebarNavigation(subsystemSlug: string): Promise<NavIt
         const cookieStore = await cookies();
         const token = cookieStore.get(COOKIE_NAME)?.value;
 
-        if (!token) return [];
+        if (!token) {
+            return subsystemSlug === "iot-system" ? DEFAULT_IOT_SYSTEM_NAV : [];
+        }
 
         const payload = decodeJwtPayload(token);
         const userId = payload?.id || payload?.user_id || payload?.sub;
@@ -94,7 +166,9 @@ export async function getSidebarNavigation(subsystemSlug: string): Promise<NavIt
                 companyTier = subData?.tier ?? null;
             }
         }
-        if (!userId) return [];
+        if (!userId) {
+            return subsystemSlug === "iot-system" ? DEFAULT_IOT_SYSTEM_NAV : [];
+        }
 
         let modulesToProcess: TempNavItem[] = [];
 
@@ -131,7 +205,9 @@ export async function getSidebarNavigation(subsystemSlug: string): Promise<NavIt
             }
         } else {
             const springBase = process.env.SPRING_API_BASE_URL;
-            if (!springBase) return [];
+            if (!springBase) {
+                return subsystemSlug === "iot-system" ? DEFAULT_IOT_SYSTEM_NAV : [];
+            }
             
             const url = `${springBase.replace(/\/+$/, "")}/api/view-user-authorized-module/all?subsystem_slug=${subsystemSlug}`;
             
@@ -166,7 +242,9 @@ export async function getSidebarNavigation(subsystemSlug: string): Promise<NavIt
             }
         }
 
-        if (modulesToProcess.length === 0) return [];
+        if (modulesToProcess.length === 0) {
+            return subsystemSlug === "iot-system" ? DEFAULT_IOT_SYSTEM_NAV : [];
+        }
 
         const modulesById: Record<number, TempNavItem> = {};
         const roots: TempNavItem[] = [];
@@ -234,9 +312,19 @@ export async function getSidebarNavigation(subsystemSlug: string): Promise<NavIt
             }
         };
         sorted.forEach(applyLocks);
+
+        if (subsystemSlug === "iot-system") {
+            const hasDsm = sorted.some(
+                (m) => m.slug === "dsm" || m.title.toLowerCase() === "dsm" || m.title.toLowerCase().includes("solar")
+            );
+            if (!hasDsm) {
+                sorted.unshift(DSM_NAV_ITEM);
+            }
+        }
+
         return sorted;
     } catch (err) {
         console.error("[Sidebar] Fatal Error:", err);
-        return [];
+        return subsystemSlug === "iot-system" ? DEFAULT_IOT_SYSTEM_NAV : [];
     }
 }
