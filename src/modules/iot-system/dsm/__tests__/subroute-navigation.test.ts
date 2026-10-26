@@ -12,15 +12,16 @@ const DSM_ROUTES = [
     { path: "/iot-system/dsm/api-diagnostics", title: "API Diagnostics" },
 ];
 
-async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 5): Promise<Response> {
     for (let i = 0; i < retries; i++) {
         try {
             const res = await fetch(url);
-            if (res.status === 200 || i === retries - 1) return res;
-            await new Promise((r) => setTimeout(r, 500));
+            if (res.status === 200) return res;
+            if (i === retries - 1) return res;
+            await new Promise((r) => setTimeout(r, 1000));
         } catch (e) {
             if (i === retries - 1) throw e;
-            await new Promise((r) => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, 1000));
         }
     }
     return fetch(url);
