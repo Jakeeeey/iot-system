@@ -38,6 +38,7 @@ const envSchema = z
     DIRECTUS_BASE_URL: z.string().url().default('http://localhost:8056'),
     DIRECTUS_API_TOKEN: z.string().optional().default(''),
     DIRECTUS_COLLECTION: z.string().min(1).max(64).regex(/^[a-zA-Z0-9_-]+$/).default('iot_solar_accounts'),
+    DSM_ADMIN_ACCESS_PIN: z.string().optional(),
     ADMIN_ACCESS_PIN: z.string().optional(),
     SESSION_SECRET: z.string().min(16).default(getNonProdSessionSecret),
     ALLOWED_DEV_ORIGINS: z.string().optional(),
@@ -60,13 +61,14 @@ const envSchema = z
         });
       }
 
-      // 2. Admin access PIN check
-      if (!data.ADMIN_ACCESS_PIN || WEAK_PINS.has(data.ADMIN_ACCESS_PIN)) {
+      // 2. Admin access PIN check (prefers DSM_ADMIN_ACCESS_PIN)
+      const effectivePin = data.DSM_ADMIN_ACCESS_PIN || data.ADMIN_ACCESS_PIN;
+      if (!effectivePin || WEAK_PINS.has(effectivePin)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ['ADMIN_ACCESS_PIN'],
+          path: ['DSM_ADMIN_ACCESS_PIN'],
           message:
-            'ADMIN_ACCESS_PIN must be configured with a secure non-default PIN in production',
+            'DSM_ADMIN_ACCESS_PIN must be configured with a secure non-default PIN in production',
         });
       }
 

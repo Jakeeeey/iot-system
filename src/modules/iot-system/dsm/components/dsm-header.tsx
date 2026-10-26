@@ -471,7 +471,7 @@ export function Header({
                 : 'Simulation'}
             </span>
             <span className="text-muted-foreground text-[10px] shrink-0 font-mono">
-              {pingMs}ms
+              {pingMs !== undefined ? `${pingMs}ms` : '--'}
             </span>
             <button
               onClick={() => syncLivePlants()}
@@ -692,14 +692,18 @@ export function Header({
 }
 
 function UtcClock() {
-  const [utcTime, setUtcTime] = useState(() => {
-    return new Date().toUTCString().slice(17, 25) + ' UTC';
-  });
+  const [mounted, setMounted] = useState(false);
+  const [utcTime, setUtcTime] = useState('');
 
   const updateTime = useCallback(() => {
     const now = new Date();
     setUtcTime(now.toUTCString().slice(17, 25) + ' UTC');
   }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    updateTime();
+  }, [updateTime]);
 
   usePolling(updateTime, {
     intervalMs: 1000,
@@ -709,7 +713,9 @@ function UtcClock() {
   return (
     <div className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-muted/40 border border-border/50 text-[11px] font-mono text-muted-foreground shrink-0">
       <Clock size={12} />
-      <span>{utcTime || '12:00:00 UTC'}</span>
+      <span suppressHydrationWarning>
+        {mounted && utcTime ? utcTime : '--:--:-- UTC'}
+      </span>
     </div>
   );
 }

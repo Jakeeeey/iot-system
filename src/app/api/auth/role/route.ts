@@ -67,10 +67,11 @@ export const POST = withGate(
 
   try {
     // 0. Check Master Admin PIN override if configured
+    const dsmAdminPin = env.DSM_ADMIN_ACCESS_PIN || env.ADMIN_ACCESS_PIN;
     if (
       (inputIdentifier === 'admin' || inputIdentifier === 'root') &&
-      env.ADMIN_ACCESS_PIN &&
-      verifyPassword(inputPassword, env.ADMIN_ACCESS_PIN)
+      dsmAdminPin &&
+      verifyPassword(inputPassword, dsmAdminPin)
     ) {
       const user = {
         id: 'master-admin',

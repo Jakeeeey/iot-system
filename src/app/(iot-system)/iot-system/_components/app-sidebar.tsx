@@ -50,6 +50,45 @@ const DSM_NAVIGATION_ITEM: NavItem = {
     ],
 };
 
+const ACCESS_CONTROL_NAVIGATION_ITEM: NavItem = {
+    title: "Access Control",
+    url: "/iot-system/access-control/doors",
+    slug: "access-control",
+    iconName: "Shield",
+    items: [
+        {
+            title: "Doors & Live Monitor",
+            url: "/iot-system/access-control/doors",
+            slug: "access-doors",
+            iconName: "DoorClosed",
+        },
+        {
+            title: "Hardware Controllers",
+            url: "/iot-system/access-control/controllers",
+            slug: "access-controllers",
+            iconName: "Cpu",
+        },
+        {
+            title: "Cardholders & Users",
+            url: "/iot-system/access-control/users",
+            slug: "access-users",
+            iconName: "Users",
+        },
+        {
+            title: "Event Logs & History",
+            url: "/iot-system/access-control/history",
+            slug: "access-history",
+            iconName: "History",
+        },
+        {
+            title: "Emergency Overrides",
+            url: "/iot-system/access-control/emergency",
+            slug: "access-emergency",
+            iconName: "AlertTriangle",
+        },
+    ],
+};
+
 export async function AppSidebar(props: ComponentProps<typeof Sidebar>) {
     // 1. Fetch data on the server using the shared action
     const items = await getSidebarNavigation("iot-system");
@@ -59,9 +98,18 @@ export async function AppSidebar(props: ComponentProps<typeof Sidebar>) {
         (item) => item.slug === "dsm" || item.url.startsWith("/iot-system/dsm")
     );
 
-    const mergedItems: NavItem[] = hasDsm
-        ? items
-        : [...items, DSM_NAVIGATION_ITEM];
+    // 3. Ensure Access Control module is present as its own collapsible menu with subtabs
+    const hasAccess = items.some(
+        (item) => item.slug === "access-control" || item.url.startsWith("/iot-system/access-control")
+    );
+
+    let mergedItems: NavItem[] = items;
+    if (!hasDsm) {
+        mergedItems = [...mergedItems, DSM_NAVIGATION_ITEM];
+    }
+    if (!hasAccess) {
+        mergedItems = [...mergedItems, ACCESS_CONTROL_NAVIGATION_ITEM];
+    }
 
     return (
         <AppSidebarClient
