@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<!-- noqa: SIZE_OK — shell markup only, all script/style external; split into partials only if a tab exceeds ~300 lines -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCESS Professional - Enterprise Door Control Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=2.7">
+    <script src="web/theme.js"></script>
+</head>
+<body>
+
+    <!-- Mobile Top Navigation Bar (Shown on screens <= 992px) -->
+    <div class="mobile-top-bar">
+        <button id="btn-mobile-drawer-toggle" class="mobile-nav-btn" aria-label="Toggle Navigation Drawer" data-fn="toggleMobileDrawer">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="mobile-brand-title">
+            <i class="fa-solid fa-id-badge" style="color: var(--accent-primary);"></i>
+            <span>ACCESS Pro</span>
+        </div>
+        <button id="mobile-theme-toggle-btn" class="mobile-nav-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme" style="margin-left: auto;">
+            <i class="fa-solid fa-sun" id="mobile-theme-toggle-icon" style="color: #f59e0b;"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Drawer Overlay Backdrop -->
+    <div id="mobile-drawer-backdrop" class="mobile-backdrop" style="display: none !important; pointer-events: none !important;" data-fn="closeMobileDrawer"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside>
+        <div class="brand-header" id="brand-header-toggle" title="Collapse sidebar" data-fn="toggleSidebarCollapse">
+            <div class="brand-icon" id="brand-icon-toggle" title="Access Professional">
+                <i class="fa-solid fa-id-badge"></i>
+            </div>
+            <div class="brand-title">
+                <h1>ACCESS Professional</h1>
+                <p>Door Control Subsystem</p>
+            </div>
+            <button class="mobile-drawer-close" aria-label="Close menu" data-fn="closeMobileDrawer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item active" data-tab="tab-command" data-fn="switchActiveTab" data-a1="tab-command" title="Executive access telemetry, flow velocity analytics, threat intelligence, and facility controls">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>Command Center</span>
+            </li>
+            <li class="nav-item" data-tab="tab-controllers" data-fn="switchActiveTab" data-a1="tab-controllers" title="Search, discover, and configure B07D575HN8 access controller panels on your LAN">
+                <i class="fa-solid fa-server"></i>
+                <span>Controllers &amp; Doors</span>
+            </li>
+            <li class="nav-item" data-tab="tab-users" data-fn="switchActiveTab" data-a1="tab-users" title="Manage cardholders, PIN codes, and multi-board door access authorizations">
+                <i class="fa-solid fa-users-gear"></i>
+                <span>Users &amp; Privileges</span>
+            </li>
+            <li class="nav-item" data-tab="tab-monitor" data-fn="switchActiveTab" data-a1="tab-monitor" title="Live stream of card swipes and access validation decisions">
+                <i class="fa-solid fa-satellite-dish"></i>
+                <span>Real-Time Monitor</span>
+            </li>
+            <li class="nav-item" data-tab="tab-history" data-fn="switchActiveTab" data-a1="tab-history" title="Review entrance logs stored in controller memory and export audit reports">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History Records</span>
+            </li>
+            <li class="nav-item" data-tab="tab-extended" data-fn="switchActiveTab" data-a1="tab-extended" title="Time profiles, business hours auto-unlock, and keypad reader dual-factor modes">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Extended Functions</span>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="live-pulse">
+                <div class="pulse-dot"></div>
+                <span id="gateway-status">Gateway: Listening 60000</span>
+            </div>
+            <div>B07D575HN8 / UHPPOTE Hardware</div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Top Metrics Header -->
+        <header class="top-bar">
+            <div class="page-header">
+                <h2 id="view-title" title="Executive access telemetry, flow velocity analytics, threat intelligence, and facility controls">Command Center</h2>
+            </div>
+
+            <div class="quick-stats">
+                <div class="stat-pill">
+                    <i class="fa-solid fa-microchip" style="color: var(--accent-cyan);"></i>
+                    <span>Live Boards: <b id="stat-boards-count">0</b></span>
+                </div>
+                <div class="stat-pill">
+                    <i class="fa-solid fa-door-open" style="color: var(--accent-primary);"></i>
+                    <span>Doors Online: <b id="stat-doors-count">0</b></span>
+                </div>
+                <div class="stat-pill">
+                    <i class="fa-solid fa-id-card" style="color: var(--accent-warning);"></i>
+                    <span>Authorized Users: <b id="stat-users-count">0</b></span>
+                </div>
+                <div class="stat-pill" id="directus-status-pill" title="Directus MySQL DB Sync (iot_access_*)">
+                    <i class="fa-solid fa-database" id="directus-status-icon" style="color: var(--accent-warning);"></i>
+                    <span>Directus DB: <b id="directus-status-text">Standby (403)</b></span>
+                </div>
+                <div class="stat-pill" id="admin-token-pill" style="cursor: pointer;" data-fn="promptForAdminToken" title="Click to view or set Admin API Token">
+                    <i class="fa-solid fa-key" id="admin-token-icon" style="color: var(--accent-cyan);"></i>
+                    <span>Auth: <b id="admin-token-text">Set Token</b></span>
+                </div>
+                <div class="stat-pill theme-toggle-pill" id="theme-toggle-btn" role="button" tabindex="0" title="Switch Theme (Light / Dark)" aria-label="Toggle theme" style="cursor: pointer;">
+                    <i class="fa-solid fa-sun" id="theme-toggle-icon" style="color: var(--accent-warning);"></i>
+                    <span>Theme: <b id="theme-toggle-text">Auto</b></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Emergency Override Active Warning Banner (Shown when any emergency state is active) -->
+        <div id="emergency-active-banner" class="emergency-active-banner" style="display: none;">
+            <div class="banner-content">
+                <div class="banner-pulse-icon" id="banner-pulse-box">
+                    <i class="fa-solid fa-triangle-exclamation" id="banner-state-icon"></i>
+                </div>
+                <div class="banner-text">
+                    <strong id="banner-state-title">EMERGENCY OVERRIDE ACTIVE</strong>
+                    <span id="banner-state-desc">All facility doors are currently in emergency override mode.</span>
+                </div>
+            </div>
+            <button id="btn-banner-restore" class="btn btn-banner-action" data-fn="triggerRestoreNormalConfirm" data-requires="write">
+                <i class="fa-solid fa-rotate-left"></i> Resume Normal Control
+            </button>
+        </div>
+
+        <!-- Global Safety & Emergency Control Bar -->
+        <div class="emergency-safety-bar" id="emergency-safety-bar">
+            <div class="safety-bar-left">
+                <span class="safety-bar-title">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--accent-cyan);"></i>
+                    <span>Facility Safety Controls:</span>
+                </span>
+                <span class="safety-state-badge badge-normal" id="safety-global-badge">
+                    <i class="fa-solid fa-circle-check"></i> Normal (Controlled)
+                </span>
+            </div>
+            <div class="safety-bar-actions">
+                <button id="btn-emergency-open" class="btn btn-emergency-open" data-fn="triggerEmergencyOpenConfirm" data-requires="write" title="Unlock all doors across facility for evacuation (Mode 1 Normally Open)">
+                    <i class="fa-solid fa-door-open"></i>
+                    <span>Emergency Open All</span>
+                </button>
+                <button id="btn-emergency-lockdown" class="btn btn-emergency-lockdown" data-fn="triggerLockdownConfirm" data-requires="write" title="Permanently lock all doors across facility (Mode 2 Normally Closed - rejects cards/PINs)">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Lockdown All Doors</span>
+                </button>
+                <button id="btn-emergency-restore" class="btn btn-emergency-restore" data-fn="triggerRestoreNormalConfirm" data-requires="write" title="Restore all doors to standard Controlled mode (Mode 3)">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Restore Normal Mode</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- ============================================================= -->
+        <!-- TAB 0: COMMAND CENTER (landing)                                -->
+        <!-- ============================================================= -->
+        <section id="tab-command" class="tab-content active">
+            <!-- Analytics Control Deck & Filter Toolbar -->
+            <div class="cc-dashboard-toolbar">
+                <div class="cc-toolbar-left">
+                    <div class="cc-pill-group" title="Filter by access decision">
+                        <button type="button" class="cc-decision-pill active" data-decision="all">All Events</button>
+                        <button type="button" class="cc-decision-pill" data-decision="granted">Granted</button>
+                        <button type="button" class="cc-decision-pill" data-decision="denied">Denied / Alerts</button>
+                    </div>
+                </div>
+                <div class="cc-toolbar-right">
+                    <div class="cc-select-wrap">
+                        <i class="fa-solid fa-server cc-select-icon"></i>
+                        <select id="cc-filter-controller" class="form-control cc-ctrl-select" aria-label="Filter by Controller">
+                            <option value="all">All Controllers</option>
+                        </select>
+                    </div>
+                    <div class="cc-select-wrap cc-date-picker-wrap" id="cc-date-picker-wrap" title="Filter by date — click to pick a day">
+                        <i class="fa-solid fa-calendar-day cc-select-icon"></i>
+                        <span id="cc-date-display" class="cc-date-display">Today</span>
+                        <i class="fa-solid fa-chevron-down cc-date-chevron"></i>
+                        <input type="date" id="cc-velocity-date" class="cc-date-input-hidden" aria-label="Filter by date" />
+                        <button type="button" id="cc-velocity-clear" class="cc-ctrl-clear" title="Reset date to Today / Live" aria-label="Clear date" style="display: none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <button type="button" id="cc-btn-refresh" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" title="Re-sync telemetry analytics">
+                        <i class="fa-solid fa-arrows-rotate"></i> <span>Sync</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Executive KPI Metrics Ribbon -->
+            <div id="cc-kpi-container" class="cc-kpi-grid"></div>
+
+            <!-- Row 1: Primary Velocity Curve + Decision Matrix Donut -->
+            <div class="cc-charts-grid" style="margin-top: 14px;">
+                <div class="controller-card cc-chart-card cc-chart-wide">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 8px;">
+                        <div class="card-title-group">
+                            <h3 title="Ingress flow &amp; hourly density curve"><i class="fa-solid fa-chart-line" style="color: var(--accent-cyan);"></i> Access Traffic Velocity</h3>
+                        </div>
+                    </div>
+                    <div id="cc-chart-timeline"></div>
+                </div>
+                <div class="controller-card cc-chart-card cc-chart-narrow cc-chart-donut-col">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 title="Authorization compliance split"><i class="fa-solid fa-chart-pie" style="color: var(--accent-primary);"></i> Decision Matrix</h3>
+                        </div>
+                    </div>
+                    <div id="cc-chart-donut"></div>
+                </div>
+            </div>
+
+            <!-- Row 2: Door Traffic Ranking + 24h Density Heatmap -->
+            <div class="cc-charts-grid" style="margin-top: 14px;">
+                <div class="controller-card cc-chart-card cc-chart-half">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 title="Busiest access points &amp; capacity load"><i class="fa-solid fa-door-open" style="color: var(--accent-warning);"></i> Door Traffic Leaderboard</h3>
+                        </div>
+                    </div>
+                    <div id="cc-chart-doors"></div>
+                </div>
+                <div class="controller-card cc-chart-card cc-chart-half">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 title="24-hour shift flow &amp; peak clustering"><i class="fa-solid fa-table-cells" style="color: var(--accent-cyan);"></i> Hourly Activity Heatmap</h3>
+                        </div>
+                    </div>
+                    <div id="cc-chart-heatmap"></div>
+                </div>
+            </div>
+
+            <!-- Row 3: Security Anomalies Matrix + Top Active Cardholders -->
+            <div class="cc-charts-grid" style="margin-top: 14px;">
+                <div class="controller-card cc-chart-card cc-chart-half">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 title="Threat classifications"><i class="fa-solid fa-shield-virus" style="color: var(--accent-danger);"></i> Security Anomaly Audit</h3>
+                        </div>
+                    </div>
+                    <div id="cc-chart-security-matrix"></div>
+                </div>
+                <div class="controller-card cc-chart-card cc-chart-half">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3 title="Most frequent badge ingress patterns"><i class="fa-solid fa-users-gear" style="color: #a855f7;"></i> Top Active Credentials</h3>
+                        </div>
+                    </div>
+                    <div id="cc-chart-top-users"></div>
+                </div>
+            </div>
+
+            <!-- Operations & Facility Command Deck -->
+            <div class="cc-ops-deck-header" style="margin-top: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div class="filter-label" title="Live controller fleet health, routine actions, and remote pulse unlock" style="font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;"><i class="fa-solid fa-sliders" style="color: var(--accent-cyan); margin-right: 6px;"></i> Facility Operations & Fleet Controls</div>
+            </div>
+
+            <!-- Unified 3-Column Operations Command Deck -->
+            <div class="cc-ops-deck-grid">
+                <!-- Col 1: Fleet Controller Status -->
+                <div class="controller-card cc-ops-card">
+                    <div class="card-header" style="margin-bottom: 8px;">
+                        <div class="card-title-group">
+                            <h3 title="Live controller fleet health &amp; online status"><i class="fa-solid fa-heart-pulse" style="color: #10b981;"></i> Fleet Controller Status</h3>
+                            <div id="cc-fleet-summary" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                    <div id="cc-fleet-body" class="cc-fleet-compact-body"></div>
+                </div>
+
+                <!-- Col 2: Facility Routine & Emergency Operations -->
+                <div class="controller-card cc-ops-card">
+                    <div class="card-header" style="margin-bottom: 8px;">
+                        <div class="card-title-group">
+                            <h3 title="One-click operations &amp; emergency overrides"><i class="fa-solid fa-bolt" style="color: var(--accent-warning);"></i> Facility Actions</h3>
+                        </div>
+                    </div>
+                    <div class="cc-actions-block">
+                        <div class="cc-actions-label"><i class="fa-solid fa-gear"></i> Routine Fleet Tasks</div>
+                        <div class="cc-btn-group">
+                            <button id="cc-qa-scan" class="btn btn-primary btn-sm" data-requires="write"><i class="fa-solid fa-radar"></i> <span>Scan Network</span></button>
+                            <button id="cc-qa-sync" class="btn btn-outline btn-sm" data-requires="write"><i class="fa-solid fa-clock"></i> <span>Sync Clocks</span></button>
+                            <button id="cc-qa-batch" class="btn btn-outline btn-sm" data-requires="write"><i class="fa-solid fa-layer-group"></i> <span>Batch Users</span></button>
+                        </div>
+                    </div>
+                    <div class="cc-actions-block cc-actions-emergency">
+                        <div class="cc-actions-label emergency-label"><i class="fa-solid fa-triangle-exclamation"></i> Emergency Overrides</div>
+                        <div class="cc-btn-group">
+                            <button id="cc-em-open" class="btn btn-emergency-open btn-sm" data-requires="write"><i class="fa-solid fa-door-open"></i> <span>Emergency Open</span></button>
+                            <button id="cc-em-lockdown" class="btn btn-emergency-lockdown btn-sm" data-requires="write"><i class="fa-solid fa-lock"></i> <span>Lockdown</span></button>
+                            <button id="cc-em-restore" class="btn btn-emergency-restore btn-sm" data-requires="write"><i class="fa-solid fa-rotate-left"></i> <span>Restore</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 3: Quick Remote Pulse -->
+                <div class="controller-card cc-ops-card">
+                    <div class="card-header" style="margin-bottom: 8px;">
+                        <div class="card-title-group">
+                            <h3 title="Pulse-unlock access point via UDP"><i class="fa-solid fa-key" style="color: var(--accent-cyan);"></i> Quick Remote Pulse</h3>
+                        </div>
+                    </div>
+                    <div class="cc-pulse-form">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label style="font-size: 11px; margin-bottom: 3px; color: var(--text-muted); display: block;">Target Controller</label>
+                            <select id="cc-pulse-board" class="form-control cc-pulse-select"><option value="">No online boards</option></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="font-size: 11px; margin-bottom: 3px; color: var(--text-muted); display: block;">Access Door</label>
+                            <select id="cc-pulse-door" class="form-control cc-pulse-select">
+                                <option value="1">Door 1 (Relay 1)</option>
+                                <option value="2">Door 2 (Relay 2)</option>
+                                <option value="3">Door 3 (Relay 3)</option>
+                                <option value="4">Door 4 (Relay 4)</option>
+                            </select>
+                        </div>
+                        <button id="cc-pulse-btn" class="btn btn-primary" style="width: 100%; justify-content: center; height: 38px; margin-top: auto;" data-requires="write"><i class="fa-solid fa-bolt"></i> <span>Pulse Unlock Door</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- S2: Alert Feed -->
+            <div class="table-container" style="margin-top: 14px;">
+                <div class="table-toolbar">
+                    <span class="filter-label"><i class="fa-solid fa-triangle-exclamation"></i> Security & Audit Incident Stream (latest 10)</span>
+                </div>
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">Time</th>
+                                <th>Alert</th>
+                                <th>Controller</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cc-alerts-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 1: CONTROLLERS & DOORS                                     -->
+        <!-- ============================================================= -->
+        <section id="tab-controllers" class="tab-content">
+            <!-- Network Scanner & View Control Bar -->
+            <div class="scanner-bar">
+                <div class="scanner-left">
+                    <button id="btn-scan-network" class="btn btn-primary" data-requires="write">
+                        <i class="fa-solid fa-radar"></i>
+                        <span>Scan Network (UDP 60000)</span>
+                    </button>
+                    <button id="btn-sync-all-clocks" class="btn btn-outline" title="Push gateway clock to all active boards" data-requires="write"><i class="fa-solid fa-clock"></i> <span>Sync All Clocks</span></button>
+
+                    <button id="continuous-monitor-cb" class="btn btn-outline" data-mode="initial-only" style="padding: 4px 10px; font-size: 11px;" title="Toggle continuous board polling (off = initial scan only)" data-requires="write">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>Continuous: Off</span>
+                    </button>
+
+                    <div class="probe-input-group">
+                        <i class="fa-solid fa-network-wired" style="color: var(--text-dim);"></i>
+                        <input type="text" id="probe-ip-input" placeholder="e.g. 192.168.1.125" value="192.168.1.125">
+                        <button id="btn-probe-ip" class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" data-requires="write">
+                            Probe IP
+                        </button>
+                    </div>
+
+                    <!-- Search Filter for Controllers/Doors -->
+                    <div class="search-box" style="min-width: 220px;">
+                        <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim); font-size: 12px;"></i>
+                        <input type="text" id="controllers-search-input" placeholder="Search controller, IP, door...">
+                    </div>
+                </div>
+
+                <!-- Right Side: View Switcher -->
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;">View:</span>
+                    <div class="view-toggle" id="controllers-view-toggle">
+                        <button id="btn-ctrl-compact" class="btn active-view" title="Compact 2x2 Door Tiles">
+                            <i class="fa-solid fa-table-cells-large"></i> Compact
+                        </button>
+                        <button id="btn-ctrl-detailed" class="btn" title="Detailed Hardware Cards">
+                            <i class="fa-solid fa-id-card"></i> Detailed
+                        </button>
+                        <button id="btn-ctrl-table" class="btn" title="Unified Fleet Door Table">
+                            <i class="fa-solid fa-list-check"></i> Door Table
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controllers Cards Container (Compact & Detailed Views) -->
+            <div id="controllers-container" class="controllers-grid">
+                <!-- Dynamically populated via app.js -->
+            </div>
+
+            <!-- Unified Fleet Door Table View -->
+            <div id="controllers-table-container" class="door-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Controller</th>
+                            <th>Door # &amp; Name</th>
+                            <th>Relay Lock Status</th>
+                            <th>Mode</th>
+                            <th>Delay</th>
+                            <th>Last Event</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="controllers-table-body">
+                        <!-- Dynamically populated via app.js -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State when no controllers discovered -->
+            <div id="controllers-empty" class="empty-state">
+                <i class="fa-solid fa-network-wired"></i>
+                <h3 style="color: var(--text-heading); font-size: 16px;">No Live Controllers Detected Yet</h3>
+                <p style="max-width: 460px; font-size: 13px;">
+                    Click <b>Scan Network</b> to broadcast UDP discovery frames or enter a target IP above to probe your B07D575HN8 boards directly.
+                </p>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 2: USERS & PRIVILEGES                                      -->
+        <!-- ============================================================= -->
+        <section id="tab-users" class="tab-content">
+
+            <!-- ── Toolbar ── -->
+            <div class="table-container" style="border-bottom: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                <div class="table-toolbar" style="border-bottom: none;">
+                    <!-- Left: Search & Filter -->
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim);"></i>
+                            <input type="text" id="users-search-input" placeholder="Search name, card no., department...">
+                        </div>
+
+                        <!-- Department Filter Dropdown -->
+                        <div class="dept-filter-box">
+                            <select id="users-dept-filter" class="form-control" style="height: 38px; padding: 0 12px; font-size: 12.5px; min-width: 170px; background: var(--bg-card); color: var(--text-heading); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); cursor: pointer;" title="Filter by Department">
+                                <option value="">All Departments</option>
+                            </select>
+                        </div>
+
+                        <!-- Door Filter Dropdown -->
+                        <div class="door-filter-box">
+                            <select id="users-door-filter" class="form-control" style="height: 38px; padding: 0 12px; font-size: 12.5px; min-width: 180px; background: var(--bg-card); color: var(--text-heading); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); cursor: pointer;" title="Filter by Authorized Door">
+                                <option value="">All Doors</option>
+                            </select>
+                        </div>
+
+                        <!-- View Toggle: Table / Per-Board -->
+                        <div class="view-toggle">
+                            <button id="btn-view-table" class="btn active-view" title="Table View">
+                                <i class="fa-solid fa-table-list"></i> Table
+                            </button>
+                            <button id="btn-view-board" class="btn" title="Per-Board View">
+                                <i class="fa-solid fa-server"></i> Per Board
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Actions -->
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button id="btn-import-hardware" class="btn btn-amber" data-requires="write">
+                            <i class="fa-solid fa-microchip"></i>
+                            <span>Extract from Hardware</span>
+                        </button>
+                        <button id="btn-batch-privilege" class="btn btn-primary" style="background: linear-gradient(135deg, #0284c7, #4f46e5); border: 1px solid rgba(99, 102, 241, 0.4); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);" data-requires="write">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>Batch Privileges</span>
+                            <span id="batch-badge-count" style="display: none; background: rgba(255,255,255,0.25); font-size: 11px; padding: 1px 7px; border-radius: 10px; margin-left: 5px; font-weight: 700;">0</span>
+                        </button>
+                        <button id="btn-sync-fleet" class="btn btn-outline" data-requires="write">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Sync All to Fleet</span>
+                        </button>
+                        <button id="btn-add-user" class="btn btn-primary" data-requires="write">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>+ Add User Privilege</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE VIEW -->
+            <div id="users-table-container" class="table-container" style="border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+                <!-- Floating / Sticky Batch Selection Bar -->
+                <div id="users-batch-bar" class="batch-selection-bar" style="display: none;" data-requires="write">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="batch-icon-pill">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <div>
+                            <span style="font-weight: 600; color: var(--text-heading); font-size: 13px;"><span id="batch-bar-count">0</span> cardholders selected</span>
+                            <span style="font-size: 11px; color: var(--text-dim); margin-left: 8px;" id="batch-bar-names-preview"></span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" id="btn-batch-open-from-bar" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #4f46e5); border: 1px solid rgba(99, 102, 241, 0.4);" data-requires="write">
+                            <i class="fa-solid fa-door-open"></i> Assign Doors
+                        </button>
+                        <button type="button" id="btn-batch-clear-selection" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">
+                            <i class="fa-solid fa-xmark"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">
+                                    <input type="checkbox" id="chk-user-select-all" title="Select / Deselect all visible cardholders" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent-primary);" data-requires="write">
+                                </th>
+                                <th>Cardholder</th>
+                                <th>Department</th>
+                                <th>Card / Fob Number</th>
+                                <th>Validity Dates</th>
+                                <th>Door Permissions</th>
+                                <th>Hardware Sync</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PER-BOARD VIEW -->
+            <div id="users-board-view">
+                <!-- Dynamically populated by renderUsersByBoard() -->
+            </div>
+
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 3: REAL-TIME MONITOR                                       -->
+        <!-- ============================================================= -->
+        <section id="tab-monitor" class="tab-content">
+
+            <!-- Top Header Strip: Compact Stats & Global Stream Controls -->
+            <div class="monitor-top-strip">
+                <div class="monitor-stats-group">
+                    <div class="live-pulse" style="margin-right: 4px;">
+                        <div class="pulse-dot"></div>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-heading); letter-spacing: 0.5px;">LIVE STREAM</span>
+                    </div>
+                    <div class="stat-chip green" title="Access granted events today">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Granted: <b id="monitor-stat-granted">0</b></span>
+                    </div>
+                    <div class="stat-chip red" title="Access denied events today">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>Denied: <b id="monitor-stat-denied">0</b></span>
+                    </div>
+                    <div class="stat-chip cyan" title="Unique cards swiped today">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span>Unique Cards: <b id="monitor-stat-cards">0</b></span>
+                    </div>
+                </div>
+
+                <div class="monitor-top-actions">
+                    <span id="monitored-doors-count-badge" class="badge-status" style="background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600;">
+                        Monitoring: All Doors
+                    </span>
+                    <button id="btn-monitor-select-all" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="Monitor all doors fleet-wide">
+                        <i class="fa-solid fa-check-double"></i> All Doors
+                    </button>
+                    <button id="btn-monitor-clear-all" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="Clear door selection">
+                        <i class="fa-solid fa-xmark"></i> Clear
+                    </button>
+                    <button id="btn-toggle-door-tiles" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="Toggle Door Tiles Grid">
+                        <i class="fa-solid fa-table-cells"></i> <span>Door Tiles</span>
+                    </button>
+                    <button id="btn-clear-monitor" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="Clear monitor display rows">
+                        <i class="fa-solid fa-broom"></i> Clear Stream
+                    </button>
+                    <button id="btn-clear-db-events-monitor" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px; color: #f87171; border-color: rgba(239,68,68,0.35);" title="Purge iot_access_events database table" data-requires="write">
+                        <i class="fa-solid fa-trash-can"></i> <span>Purge DB Events</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slim Horizontal Door Status Ribbon with Slider / Wrapped / Collapsed options -->
+            <div id="monitor-doors-ribbon" class="monitor-ribbon-bar">
+                <div class="ribbon-left-meta">
+                    <button id="btn-collapse-door-ribbon" class="ribbon-collapse-btn" title="Collapse / Expand Door Ribbon" data-fn="toggleMonitorDoorsCollapse">
+                        <i id="icon-collapse-door-ribbon" class="fa-solid fa-chevron-up"></i>
+                    </button>
+                    <span class="ribbon-label" data-fn="toggleMonitorDoorsCollapse" style="cursor: pointer;" title="Toggle Doors Ribbon">
+                        <i class="fa-solid fa-door-closed" style="color: var(--accent-primary);"></i>
+                        <span>Doors:</span>
+                    </span>
+                    <span id="ribbon-collapsed-summary" class="ribbon-collapsed-summary" data-fn="toggleMonitorDoorsCollapse" title="Click to expand door chips">
+                        <!-- Populated dynamically when collapsed -->
+                    </span>
+                </div>
+
+                <!-- Slider Left / Up Scroll Arrow -->
+                <button id="btn-doors-scroll-left" class="ribbon-nav-btn" title="Scroll Left" data-fn="scrollMonitorDoorChips" data-a1="-1">
+                    <i id="icon-doors-scroll-prev" class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <!-- Door Chips Container (Switches between .mode-slider, .mode-vslider, and .mode-wrap) -->
+                <div id="monitored-door-chips" class="door-chips-wrapper mode-slider">
+                    <!-- Populated dynamically with compact live LED pills -->
+                </div>
+
+                <!-- Slider Right / Down Scroll Arrow -->
+                <button id="btn-doors-scroll-right" class="ribbon-nav-btn" title="Scroll Right" data-fn="scrollMonitorDoorChips" data-a1="1">
+                    <i id="icon-doors-scroll-next" class="fa-solid fa-chevron-right"></i>
+                </button>
+
+                <!-- Mode Toggle (Slider vs V-Slider vs Wrap) -->
+                <div class="view-toggle ribbon-view-toggle" title="Door display mode">
+                    <button id="btn-doors-mode-slider" class="btn active-view" data-fn="setMonitorDoorsViewMode" data-a1="slider" title="Horizontal Slider View">
+                        <i class="fa-solid fa-arrows-left-right"></i> <span style="font-size: 11px;">Slider</span>
+                    </button>
+                    <button id="btn-doors-mode-vslider" class="btn" data-fn="setMonitorDoorsViewMode" data-a1="vslider" title="Vertical Slider View">
+                        <i class="fa-solid fa-arrows-up-down"></i> <span style="font-size: 11px;">V-Slider</span>
+                    </button>
+                    <button id="btn-doors-mode-wrap" class="btn" data-fn="setMonitorDoorsViewMode" data-a1="wrap" title="Wrapped Multi-Line View">
+                        <i class="fa-solid fa-table-cells-large"></i> <span style="font-size: 11px;">Wrapped</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Optional Collapsible Door Tiles Grid (Hidden by default, toggled via btn-toggle-door-tiles) -->
+            <div id="monitored-doors-grid" class="monitored-grid" style="display: none;">
+                <!-- Populated dynamically with door cards if expanded -->
+            </div>
+
+            <!-- Live Event Table with Integrated Low-Profile Filter Bar & View Toggle -->
+            <div class="table-container">
+                <div class="monitor-filter-bar">
+                    <span class="filter-label"><i class="fa-solid fa-filter"></i> Filters:</span>
+
+                    <select id="monitor-filter-controller" class="filter-select" title="Filter by Controller">
+                        <option value="">All Controllers</option>
+                    </select>
+
+                    <input type="text" id="monitor-filter-door" class="filter-input" placeholder="Door name/No.">
+
+                    <input type="text" id="monitor-filter-card" class="filter-input" placeholder="Card number...">
+
+                    <div class="search-box" style="min-width: 160px; flex: 1; padding: 4px 10px;">
+                        <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim); font-size: 11px;"></i>
+                        <input type="text" id="monitor-search-input" placeholder="Search event, user, card...">
+                    </div>
+
+                    <button id="btn-clear-monitor-filters" class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;">
+                        <i class="fa-solid fa-xmark"></i> Reset
+                    </button>
+
+                    <!-- View Toggle: Cards vs Table -->
+                    <div class="view-toggle" id="monitor-view-toggle" title="Switch between Card Feed and Table view">
+                        <button id="btn-monitor-view-cards" class="btn" data-fn="setMonitorViewMode" data-a1="cards" data-a2="true">
+                            <i class="fa-solid fa-address-card"></i> <span>Cards</span>
+                        </button>
+                        <button id="btn-monitor-view-table" class="btn" data-fn="setMonitorViewMode" data-a1="table" data-a2="true">
+                            <i class="fa-solid fa-table-list"></i> <span>Table</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile Horizontal Scroll Hint (Visible only in table mode on mobile) -->
+                <div id="monitor-table-scroll-hint" class="table-scroll-hint" style="display: none;">
+                    <i class="fa-solid fa-arrows-left-right"></i>
+                    <span>Swipe table horizontally to inspect all 8 columns</span>
+                </div>
+
+                <!-- Table View Mode -->
+                <div id="monitor-table-wrapper" class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">Time</th>
+                                <th>Event Type</th>
+                                <th>Controller</th>
+                                <th>Door</th>
+                                <th>W26 Card No. (HW)</th>
+                                <th>Cardholder</th>
+                                <th>Result</th>
+                                <th style="text-align: right;">Quick Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monitor-table-body">
+                            <!-- Dynamically populated via SSE -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Adaptive Cards / Feed Mode Container (Shows all 8 columns cleanly on mobile) -->
+                <div id="monitor-cards-container" class="monitor-cards-container" style="display: none;">
+                    <!-- Dynamically populated via SSE -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 4: HISTORY RECORDS                                         -->
+        <!-- ============================================================= -->
+        <section id="tab-history" class="tab-content">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <!-- Type Filter -->
+                        <div class="probe-input-group">
+                            <label style="font-size: 11px; color: var(--text-dim);">Type:</label>
+                            <select id="history-type-filter" class="form-control" style="padding: 4px 8px; font-size: 12px;">
+                                <option value="">All Events</option>
+                                <option value="SWIPE_EVENT">Card Swipes (legacy)</option>
+                                <option value="SWIPE_GRANTED">Access Granted</option>
+                                <option value="SWIPE_DENIED">Access Denied</option>
+                                <option value="REMOTE_OPEN">Remote Unlock</option>
+                                <option value="DOOR_CONFIG">Door Config</option>
+                                <option value="DISCOVERY">Discovery</option>
+                                <option value="HARDWARE_IMPORT">Hardware Import</option>
+                                <option value="USER_PRIVILEGE">User Privilege</option>
+                            </select>
+                        </div>
+
+                        <!-- Text Search -->
+                        <div class="search-box" style="min-width: 240px;">
+                            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim); font-size: 12px;"></i>
+                            <input type="text" id="history-search-input" placeholder="Search controller, card, user, message...">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button id="btn-export-csv" class="btn btn-outline">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <span>Export CSV</span>
+                        </button>
+                        <button id="btn-clear-events-table" class="btn btn-danger" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s;" title="Clear and purge all records from iot_access_events table" data-requires="write">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <span>Clear Events Table</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">Timestamp</th>
+                                <th>Type</th>
+                                <th>Controller</th>
+                                <th>Door / Target</th>
+                                <th>W26 Card No. (HW)</th>
+                                <th>PIN</th>
+                                <th>Printed Card (10D)</th>
+                                <th>Cardholder</th>
+                                <th>Status &amp; Message</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 5: EXTENDED FUNCTIONS (Advance-Features.pdf)               -->
+        <!-- ============================================================= -->
+        <section id="tab-extended" class="tab-content">
+            <div class="extended-grid">
+                <!-- Time Schedule Card -->
+                <div class="controller-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3><i class="fa-solid fa-calendar-check" style="color: var(--accent-primary);"></i> Time Profiles</h3>
+                            <span>Restrict user access hours (e.g. Mon–Fri 09:00–17:00)</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+                        Configure up to 254 distinct time profiles on B07D575HN8 hardware. Access is rejected outside designated hours with Reason Code 6.
+                    </p>
+                    <button class="btn btn-outline" data-fn="__alert" data-a1="Time Profile manager activated for connected controllers." data-requires="write">
+                        Configure Time Profiles
+                    </button>
+                </div>
+
+                <!-- Business Hours Keep Open -->
+                <div class="controller-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3><i class="fa-solid fa-clock" style="color: var(--accent-cyan);"></i> Business Hours Auto-Open</h3>
+                            <span>Keep doors unlocked during working hours</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+                        Sets door relay mode to Normally Open (Command 0x80 mode 1) during business schedule, returning to Controlled mode after off-duty hours.
+                    </p>
+                    <button class="btn btn-outline" data-fn="__alert" data-a1="Door mode scheduled automation active." data-requires="write">
+                        Configure Auto-Unlock Schedule
+                    </button>
+                </div>
+
+                <!-- Keypad PIN Reader -->
+                <div class="controller-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h3><i class="fa-solid fa-keyboard" style="color: var(--accent-warning);"></i> Keypad Reader PIN Mode</h3>
+                            <span>Reader PIN + Card Dual Factor Access</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+                        Wiegand keypad readers transmit PIN numbers directly into the B07D575HN8 controller memory encoded in packet bytes 24-26.
+                    </p>
+                    <button class="btn btn-outline" data-fn="__alert" data-a1="Keypad PIN programming manual available in 3.Advance-Features.pdf.">
+                        View PIN Code Guide
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Add / Edit User Privilege -->
+    <div id="modal-user" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-user-title" style="color: var(--text-heading); font-size: 16px;">Add User Open Privilege</h3>
+                <button id="modal-user-close" style="background: transparent; border: none; color: var(--text-dim); font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+            <form id="form-user">
+                <div class="modal-body">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="user-name" class="form-control" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Department / Group</label>
+                            <select id="user-dept" class="form-control" style="width: 100%;">
+                                <!-- Dynamically populated by users-form.js -->
+                            </select>
+                            <input type="text" id="user-dept-custom" class="form-control" placeholder="Type new department name..." style="display: none; margin-top: 6px;">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>RFID Card / Fob Number (Wiegand or 10-Digit Printed)</label>
+                            <input type="text" id="user-card" class="form-control" placeholder="e.g. 11156292 or 2658130916" required>
+                            <input type="hidden" id="user-raw-card" value="">
+                            <div id="user-card-hint" style="font-size: 11px; margin-top: 5px; color: var(--accent-cyan); display: none; line-height: 1.4;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Keypad PIN Code (Optional)</label>
+                            <input type="number" id="user-pin" class="form-control" placeholder="1-999999">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Valid From (Start Date)</label>
+                            <input type="date" id="user-start-date" class="form-control" value="2026-01-01">
+                        </div>
+                        <div class="form-group">
+                            <label>Valid To (Expiration Date)</label>
+                            <input type="date" id="user-end-date" class="form-control" value="2029-12-31">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; display: block;">
+                            <i class="fa-solid fa-sliders" style="color: var(--accent-primary);"></i> Privilege Operation Mode
+                        </label>
+                        <div class="batch-mode-grid">
+                            <label class="batch-mode-card" data-mode="grant">
+                                <input type="radio" name="single-action-mode" value="grant" style="display: none;">
+                                <div class="batch-mode-radio-dot"></div>
+                                <div>
+                                    <div class="batch-mode-title"><i class="fa-solid fa-circle-plus" style="color: #10b981;"></i> Grant / Append</div>
+                                    <div class="batch-mode-desc">Add checked doors. Unchecked doors stay as-is.</div>
+                                </div>
+                            </label>
+                            <label class="batch-mode-card" data-mode="revoke">
+                                <input type="radio" name="single-action-mode" value="revoke" style="display: none;">
+                                <div class="batch-mode-radio-dot"></div>
+                                <div>
+                                    <div class="batch-mode-title"><i class="fa-solid fa-circle-minus" style="color: #ef4444;"></i> Revoke Doors</div>
+                                    <div class="batch-mode-desc">Remove checked doors. Other doors remain active.</div>
+                                </div>
+                            </label>
+                            <label class="batch-mode-card active" data-mode="replace">
+                                <input type="radio" name="single-action-mode" value="replace" checked style="display: none;">
+                                <div class="batch-mode-radio-dot"></div>
+                                <div>
+                                    <div class="batch-mode-title"><i class="fa-solid fa-arrows-rotate" style="color: #06b6d4;"></i> Overwrite All</div>
+                                    <div class="batch-mode-desc">Cardholder will ONLY have checked doors. Unchecked are revoked.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label>Multi-Board Door Access Permissions
+                                <span id="single-doors-selected-badge" style="display: none; font-size: 10px; font-weight: 600; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 10px; padding: 1px 7px; margin-left: 6px;">0 selected</span>
+                            </label>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="#" id="link-select-all-doors" style="color: var(--accent-primary); font-size: 11px; text-decoration: none;">Select All</a>
+                                <span style="color: var(--text-dim); font-size: 11px;">|</span>
+                                <a href="#" id="link-clear-all-doors" style="color: var(--text-dim); font-size: 11px; text-decoration: none;">Clear All</a>
+                            </div>
+                        </div>
+                        <div style="position: relative; margin-bottom: 8px;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--accent-cyan); font-size: 12px; pointer-events: none;"></i>
+                            <input type="text" id="single-door-search-input" class="form-control" placeholder="Search target doors by name, door #, controller name, or SN..." autocomplete="off" style="padding-left: 32px; padding-right: 28px; font-size: 12px; height: 34px;">
+                            <button type="button" id="btn-single-clear-door-search" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 12px; padding: 4px; line-height: 1;" title="Clear search">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div id="single-doors-search-meta" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 11px; color: var(--text-dim); padding: 0 4px;">
+                            <span id="single-doors-match-count">Showing 0 matching doors</span>
+                            <span style="opacity: 0.7;">Esc to clear</span>
+                        </div>
+                        <div id="modal-doors-picker" class="permissions-picker">
+                            <!-- Dynamically populated per detected controller -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn-cancel-user" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-requires="write">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Upload Privileges to Hardware</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Batch User Privilege Assignment -->
+    <div id="modal-batch-privilege" class="modal-overlay">
+        <div class="modal-card" style="max-width: 680px; width: 95%;">
+            <div class="modal-header" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(99, 102, 241, 0.15)); border-bottom: 1px solid rgba(99, 102, 241, 0.3);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center; color: #818cf8;">
+                        <i class="fa-solid fa-layer-group" style="font-size: 16px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--text-heading); font-size: 16px; margin: 0; font-weight: 700;">Batch User Door Privileges</h3>
+                        <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">Assign or update door permissions for multiple cardholders simultaneously</div>
+                    </div>
+                </div>
+                <button type="button" id="modal-batch-close" style="background: transparent; border: none; color: var(--text-dim); font-size: 22px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <form id="form-batch-privileges">
+                <div class="modal-body" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+                    
+                    <!-- Section 1: Selected Users List -->
+                    <div style="margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> Target Cardholders (<span id="batch-modal-user-count">0</span>)
+                            </label>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="#" id="link-batch-select-all-users" style="color: var(--accent-primary); font-size: 11px; text-decoration: none;">Select All</a>
+                                <span style="color: var(--text-dim); font-size: 11px;">|</span>
+                                <a href="#" id="link-batch-clear-users" style="color: var(--text-dim); font-size: 11px; text-decoration: none;">Clear</a>
+                            </div>
+                        </div>
+
+                        <!-- Quick Search & Add Bar -->
+                        <div class="batch-user-search-wrapper" style="position: relative; margin-bottom: 10px;">
+                            <div style="display: flex; gap: 8px;">
+                                <div style="position: relative; flex: 1;">
+                                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--accent-cyan); font-size: 12px; pointer-events: none;"></i>
+                                    <input type="text" id="batch-user-search-input" class="form-control" placeholder="Search by name, card #, or dept to add to batch..." autocomplete="off" style="padding-left: 32px; font-size: 12px; height: 36px;">
+                                </div>
+                                <div style="position: relative;">
+                                    <button type="button" id="btn-batch-add-by-dept" class="btn btn-outline" style="font-size: 11px; white-space: nowrap; padding: 0 12px; height: 36px; display: flex; align-items: center; gap: 6px;" title="Add all cardholders from a department">
+                                        <i class="fa-solid fa-building-user"></i> By Department <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.7;"></i>
+                                    </button>
+                                    <div id="batch-dept-dropdown" class="batch-search-dropdown" style="display: none; right: 0; left: auto; min-width: 220px;"></div>
+                                </div>
+                            </div>
+                            <!-- Live search dropdown -->
+                            <div id="batch-user-search-dropdown" class="batch-search-dropdown" style="display: none;"></div>
+                        </div>
+
+                        <!-- Selected users pill container -->
+                        <div id="batch-selected-users-list" class="batch-users-chips-box">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Action Mode (Grant / Revoke / Replace) -->
+                    <div style="margin-bottom: 18px;">
+                        <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; display: block;">
+                            <i class="fa-solid fa-sliders" style="color: var(--accent-primary);"></i> Privilege Operation Mode
+                        </label>
+                        <div class="batch-mode-grid">
+                            <label class="batch-mode-card active" data-mode="grant">
+                                <input type="radio" name="batch-action-mode" value="grant" checked style="display: none;">
+                                <div class="batch-mode-radio-dot"></div>
+                                <div>
+                                    <div class="batch-mode-title"><i class="fa-solid fa-circle-plus" style="color: #10b981;"></i> Grant / Append</div>
+                                    <div class="batch-mode-desc">Add selected doors to each cardholder. Existing doors stay intact.</div>
+                                </div>
+                            </label>
+                            <label class="batch-mode-card" data-mode="revoke">
+                                <input type="radio" name="batch-action-mode" value="revoke" style="display: none;">
+                                <div class="batch-mode-radio-dot"></div>
+                                <div>
+                                    <div class="batch-mode-title"><i class="fa-solid fa-circle-minus" style="color: #ef4444;"></i> Revoke Doors</div>
+                                    <div class="batch-mode-desc">Remove selected doors from each cardholder. Other doors remain active.</div>
+                                </div>
+                            </label>
+                            <label class="batch-mode-card" data-mode="replace">
+                                <input type="radio" name="batch-action-mode" value="replace" style="display: none;">
+                                <div class="batch-mode-radio-dot"></div>
+                                <div>
+                                    <div class="batch-mode-title"><i class="fa-solid fa-arrows-rotate" style="color: #06b6d4;"></i> Overwrite All</div>
+                                    <div class="batch-mode-desc">Cardholders will ONLY have access to checked doors. All unselected doors are revoked.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Target Doors Picker (Multi-Controller) -->
+                    <div style="margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-door-open" style="color: var(--accent-primary);"></i> Target Doors Across Controllers
+                                <span id="batch-doors-selected-badge" style="display: none; font-size: 10px; font-weight: 600; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 10px; padding: 1px 7px;">0 selected</span>
+                            </label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <a href="#" id="link-batch-select-all-doors" style="color: var(--accent-primary); font-size: 11px; text-decoration: none;">Select All Doors</a>
+                                <span style="color: var(--text-dim); font-size: 11px;">|</span>
+                                <a href="#" id="link-batch-clear-doors" style="color: var(--text-dim); font-size: 11px; text-decoration: none;">Clear</a>
+                            </div>
+                        </div>
+
+                        <!-- Target Doors Search Bar -->
+                        <div class="batch-doors-search-wrapper" style="position: relative; margin-bottom: 8px;">
+                            <div style="position: relative;">
+                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--accent-cyan); font-size: 12px; pointer-events: none;"></i>
+                                <input type="text" id="batch-door-search-input" class="form-control" placeholder="Search target doors by name, door #, controller name, or SN..." autocomplete="off" style="padding-left: 32px; padding-right: 28px; font-size: 12px; height: 34px;">
+                                <button type="button" id="btn-batch-clear-door-search" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 12px; padding: 4px; line-height: 1;" title="Clear search">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div id="batch-doors-search-meta" style="display: none; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 11px; color: var(--text-dim); padding: 0 4px;">
+                                <span id="batch-doors-match-count">Showing 0 matching doors</span>
+                                <span style="opacity: 0.7;">Esc to clear</span>
+                            </div>
+                        </div>
+
+                        <div id="batch-doors-picker" class="permissions-picker" style="max-height: 220px;">
+                            <!-- Dynamically populated from discovered controllers -->
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Optional Dates Update -->
+                    <div style="margin-bottom: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 13px; color: var(--text-heading); margin-bottom: 0;">
+                            <input type="checkbox" id="chk-batch-update-dates" style="accent-color: var(--accent-primary); width: 16px; height: 16px; cursor: pointer;">
+                            <span>Also update validity date range for all selected cardholders</span>
+                        </label>
+                        <div id="batch-dates-group" style="display: none; margin-top: 12px;" class="form-grid-2">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 11px; color: var(--text-dim);">Start Date</label>
+                                <input type="date" id="batch-start-date" class="form-control" value="2026-01-01">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 11px; color: var(--text-dim);">Expiration Date</label>
+                                <input type="date" id="batch-end-date" class="form-control" value="2029-12-31">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing status & progress indicator (visible during submission) -->
+                    <div id="batch-progress-container" style="display: none; margin-top: 14px; background: var(--bg-card-hover); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 12px; color: var(--text-main);" id="batch-progress-text"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 6px; color: var(--accent-cyan);"></i> Processing batch...</span>
+                            <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);" id="batch-progress-pct">0%</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                            <div id="batch-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1); transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer" style="padding: 14px 22px; gap: 10px;">
+                    <button type="button" id="btn-cancel-batch" class="btn btn-outline">Cancel</button>
+                    <button type="submit" id="btn-submit-batch" class="btn btn-primary" style="background: linear-gradient(135deg, #0284c7, #4f46e5); border: 1px solid rgba(99, 102, 241, 0.4); padding: 8px 20px;" data-requires="write">
+                        <i class="fa-solid fa-cloud-arrow-up" id="batch-submit-icon"></i>
+                        <span id="batch-submit-label">Grant Doors &amp; Push UDP</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Door Settings -->
+    <div id="modal-door" class="modal-overlay">
+        <div class="modal-card" style="width: 480px;">
+            <div class="modal-header">
+                <h3 id="modal-door-title" style="color: var(--text-heading); font-size: 16px;">Configure Door Settings</h3>
+                <button id="modal-door-close" style="background: transparent; border: none; color: var(--text-dim); font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+            <form id="form-door">
+                <input type="hidden" id="door-serial">
+                <input type="hidden" id="door-number">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Door Name</label>
+                        <input type="text" id="door-name-input" class="form-control" placeholder="e.g. Front Glass Entrance" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Relay Unlock Pulse Delay (Seconds: 1–60)</label>
+                        <input type="number" id="door-delay-input" class="form-control" min="1" max="60" value="5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Door Control Mode</label>
+                        <select id="door-mode-input" class="form-control">
+                            <option value="Controlled">Controlled (Card / PIN Required)</option>
+                            <option value="NormallyOpen">Normally Open (Keep Unlocked)</option>
+                            <option value="NormallyClosed">Normally Closed (Keep Locked)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Lock Type</label>
+                        <select id="door-locktype-input" class="form-control">
+                            <option value="strike">Electric strike (fail-secure pulse unlock)</option>
+                            <option value="magnetic">Magnetic lock (fail-safe hold locked)</option>
+                        </select>
+                        <span style="font-size: 11px; color: var(--text-dim); margin-top: 3px;">
+                            Nearly all doors are electric strike today; select magnetic lock only for maglock-fitted doors so locked/unlocked reads correctly.
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <span><i class="fa-solid fa-keyboard" style="color: var(--accent-warning); margin-right: 4px;"></i> Reader Keypad</span>
+                            <span class="door-keypad-state" id="door-keypad-state">Keypad: Enabled</span>
+                        </label>
+                        <label class="keypad-toggle-row">
+                            <input type="checkbox" id="door-keypad-toggle">
+                            <span>Enable keypad PIN entry on this reader</span>
+                        </label>
+                        <span class="passcode-help">
+                            When disabled, the reader ignores PIN keypad input for this door and only accepts cards.
+                        </span>
+                    </div>
+
+                    <div class="form-group" id="door-passcodes-group">
+                        <label><i class="fa-solid fa-hashtag" style="color: var(--accent-cyan); margin-right: 4px;"></i> Door Passcodes (PIN without card)</label>
+                        <div id="door-passcodes-list" class="passcode-rows"></div>
+                        <input type="text" id="door-passcodes-input" class="form-control" inputmode="numeric" autocomplete="off" placeholder="Type new code(s), e.g. 1234 5678">
+                        <span class="passcode-help">
+                            Add codes here (each 4-8 digits, up to 4 per door). Enter a saved code then # on the keypad to open the door.
+                        </span>
+                        <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px;">
+                            <button type="button" id="btn-save-door-passcodes" class="btn btn-outline" style="padding: 6px 14px; font-size: 12px;" data-requires="write">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Add Passcode(s)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="door-sensor-group">
+                        <label><i class="fa-solid fa-satellite-dish" style="color: var(--accent-cyan); margin-right: 4px;"></i> Door Contact Sensor (Magnetic Switch on SEN Terminal)</label>
+                        <select id="door-sensor-input" class="form-control">
+                            <option value="false">Not Installed (No Sensor Wired / Ignore SEN)</option>
+                            <option value="true">Installed &amp; Active (Detect Physical Open/Closed)</option>
+                        </select>
+                        <span style="font-size: 11px; color: var(--text-dim); margin-top: 3px;">
+                            If no magnetic switch is wired to the SEN terminal, keep this as "Not Installed" so the door does not show as open.
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn-cancel-door" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-requires="write">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Save to Hardware</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Emergency Confirmation Dialog -->
+    <div id="modal-emergency-confirm" class="modal-overlay">
+        <div class="modal-card modal-card-emergency" style="max-width: 500px;">
+            <div class="modal-header modal-header-emergency">
+                <h3 id="modal-emergency-title" style="display: flex; align-items: center; gap: 10px; font-size: 16px;">
+                    <i class="fa-solid fa-triangle-exclamation" id="modal-emergency-icon"></i>
+                    <span id="modal-emergency-heading">Confirm Emergency Action</span>
+                </h3>
+                <button id="modal-emergency-close" style="background: transparent; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div style="font-size: 14px; line-height: 1.6; margin-bottom: 14px; color: var(--text-main);" id="modal-emergency-msg">
+                    Are you sure you want to execute this emergency override?
+                </div>
+                <div class="emergency-role-banner banner-warning" id="modal-emergency-role-banner">
+                    <i class="fa-solid fa-shield-halved" id="modal-emergency-role-icon"></i>
+                    <span id="modal-emergency-role-msg">Superadmin authorization required for facility safety overrides.</span>
+                </div>
+                <div style="padding: 12px 14px; background: var(--bg-card-hover); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px;">
+                    <i class="fa-solid fa-microchip" style="color: var(--accent-cyan); margin-top: 2px;"></i>
+                    <span id="modal-emergency-hardware-note">This command transmits UHPPOTE 0x80 packets to hardware controller boards to immediately reconfigure relay operational states.</span>
+                </div>
+
+                <!-- Confirmation Keyword Input -->
+                <div id="emergency-keyword-group" style="margin-bottom: 14px;">
+                    <label id="emergency-keyword-label" for="emergency-keyword-input" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">
+                        Type <strong id="emergency-keyword-prompt" style="color: var(--accent-danger);">OPEN</strong> to confirm:
+                    </label>
+                    <input type="text" id="emergency-keyword-input" class="form-control" placeholder="Type keyword to unlock..." autocomplete="off" style="width: 100%; font-family: var(--font-mono); text-transform: uppercase;" />
+                </div>
+
+                <!-- Superadmin Token / Password Input (displayed when current session lacks superadmin) -->
+                <div id="emergency-superadmin-group" style="margin-bottom: 14px; display: none;">
+                    <label for="emergency-superadmin-input" class="emergency-superadmin-label" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                        <i class="fa-solid fa-key"></i> Superadmin Password / Token:
+                    </label>
+                    <input type="password" id="emergency-superadmin-input" class="form-control" placeholder="Enter Superadmin token" autocomplete="current-password" style="width: 100%;" />
+                </div>
+
+                <div>
+                    <label for="emergency-reason-input" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Reason (sent as audit justification)</label>
+                    <textarea id="emergency-reason-input" rows="2" placeholder="e.g. Fire evacuation drill, active threat in Block B" class="form-control" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 14px 20px; gap: 12px;">
+                <button type="button" id="btn-cancel-emergency" class="btn btn-outline">Cancel</button>
+                <button type="button" id="btn-confirm-emergency-action" class="btn btn-danger" disabled style="padding: 9px 20px; opacity: 0.45; cursor: not-allowed;" data-requires="write">
+                    <i class="fa-solid fa-check" id="btn-confirm-emergency-icon"></i>
+                    <span id="btn-confirm-emergency-label">Execute Now</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Clear iot_access_events Confirmation with Warning -->
+    <div id="modal-clear-events" class="modal-overlay">
+        <div class="modal-card" style="max-width: 520px; border-color: rgba(239, 68, 68, 0.45); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(239, 68, 68, 0.15);">
+            <div class="modal-header" style="background: rgba(239, 68, 68, 0.12); border-bottom: 1px solid rgba(239, 68, 68, 0.25); display: flex; align-items: center; justify-content: space-between; padding: 16px 22px;">
+                <h3 style="color: #f87171; display: flex; align-items: center; gap: 10px; font-size: 16px; margin: 0; font-weight: 700;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px; color: #ef4444;"></i>
+                    <span>Warning: Clear iot_access_events Table</span>
+                </h3>
+                <button id="modal-clear-events-close" style="background: transparent; border: none; color: var(--text-dim); font-size: 22px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 22px;">
+                <!-- Prominent Warning Banner -->
+                <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; display: flex; gap: 12px; align-items: flex-start;">
+                    <i class="fa-solid fa-radiation" style="color: #ef4444; font-size: 22px; margin-top: 2px; flex-shrink: 0;"></i>
+                    <div>
+                        <div style="font-weight: 700; color: #fca5a5; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Permanent Data Deletion</div>
+                        <div style="font-size: 12.5px; color: #e2e8f0; line-height: 1.55;">
+                            You are about to permanently purge all access logs, swipe records, and audit history from the <strong><code>iot_access_events</code></strong> table in Directus / MySQL and local gateway memory.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consequences Checklist -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px;">
+                    <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Operational Impact:</div>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 12.5px; color: var(--text-main); line-height: 1.75;">
+                        <li><strong style="color: #ef4444;">Purged:</strong> All cardholder badge swipes, remote door unlocks, and alarm records will be deleted.</li>
+                        <li><strong style="color: #f59e0b;">Irreversible:</strong> This operation cannot be rolled back. Deleted event records are unrecoverable.</li>
+                        <li><strong style="color: #10b981;">Preserved:</strong> Controllers, door configurations, user cards, and hardware permissions are <strong>NOT</strong> touched.</li>
+                    </ul>
+                </div>
+
+                <!-- Backup recommendation strip -->
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 18px;">
+                    <div style="font-size: 12px; color: #67e8f9; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Need to save a copy before purging?</span>
+                    </div>
+                    <button type="button" id="btn-clear-modal-export-csv" class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;">
+                        Export CSV First
+                    </button>
+                </div>
+
+                <!-- Confirmation Checkbox -->
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; user-select: none; font-size: 13px; color: var(--text-main); padding: 10px 12px; border-radius: 6px; background: var(--bg-card-hover); border: 1px solid var(--border-subtle);">
+                    <input type="checkbox" id="chk-confirm-clear-events" style="margin-top: 3px; accent-color: #ef4444; width: 16px; height: 16px; cursor: pointer;" data-requires="write">
+                    <span style="line-height: 1.4;">I understand that this action is irreversible and I confirm clearing the <strong><code>iot_access_events</code></strong> table.</span>
+                </label>
+            </div>
+            <div class="modal-footer" style="padding: 14px 22px; gap: 12px; display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color);">
+                <button type="button" id="btn-cancel-clear-events" class="btn btn-outline" style="padding: 8px 16px; font-size: 13px;">Cancel</button>
+                <button type="button" id="btn-confirm-clear-events" class="btn btn-danger" disabled style="padding: 8px 18px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; opacity: 0.45; cursor: not-allowed; transition: all 0.2s;" data-requires="write">
+                    <i class="fa-solid fa-trash-can" id="icon-confirm-clear-events"></i>
+                    <span id="btn-confirm-clear-events-text">Clear iot_access_events Table</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Token (masked password entry) -->
+    <div id="modal-admin-token" class="modal-overlay">
+        <div class="modal-card" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 style="color: var(--text-heading); font-size: 16px;"><i class="fa-solid fa-key" style="color: var(--accent-cyan);"></i> <span id="admin-token-modal-title">Admin Token</span></h3>
+                <button id="modal-admin-token-close" style="background: transparent; border: none; color: var(--text-dim); font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="admin-token-modal-msg" style="font-size: 13px; color: var(--text-main); line-height: 1.55; margin-bottom: 12px;">Enter the ADMIN_TOKEN for secure door control and gateway access:</p>
+                <div style="position: relative;">
+                    <input type="password" id="admin-token-input" class="form-control" autocomplete="current-password" placeholder="Enter admin token" style="width: 100%; padding-right: 40px;" />
+                    <button type="button" id="admin-token-toggle" title="Show / hide token" style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 15px; padding: 4px 8px;"><i class="fa-solid fa-eye"></i></button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-admin-token-remove" class="btn btn-outline" style="margin-right: auto;">Remove</button>
+                <button type="button" id="btn-admin-token-cancel" class="btn btn-outline">Cancel</button>
+                <button type="button" id="btn-admin-token-save" class="btn btn-primary">Save Token</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Visible on mobile <= 768px) -->
+    <nav class="mobile-bottom-nav">
+        <button class="bottom-nav-item active" data-tab="tab-command" data-fn="switchActiveTab" data-a1="tab-command" title="Executive access telemetry, flow velocity analytics, threat intelligence, and facility controls">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Command</span>
+        </button>
+        <button class="bottom-nav-item" data-tab="tab-controllers" data-fn="switchActiveTab" data-a1="tab-controllers" title="Search, discover, and configure B07D575HN8 access controller panels on your LAN">
+            <i class="fa-solid fa-server"></i>
+            <span>Boards</span>
+        </button>
+        <button class="bottom-nav-item" data-tab="tab-users" data-fn="switchActiveTab" data-a1="tab-users" title="Manage cardholders, PIN codes, and multi-board door access authorizations">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>Users</span>
+        </button>
+        <button class="bottom-nav-item" data-tab="tab-monitor" data-fn="switchActiveTab" data-a1="tab-monitor" title="Live stream of card swipes and access validation decisions">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <span>Monitor</span>
+        </button>
+        <button class="bottom-nav-item" data-tab="tab-history" data-fn="switchActiveTab" data-a1="tab-history" title="Review entrance logs stored in controller memory and export audit reports">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>History</span>
+        </button>
+        <button class="bottom-nav-item" data-fn="toggleMobileDrawer" title="Open navigation drawer menu">
+            <i class="fa-solid fa-bars"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <script src="card-format.js?v=2.5"></script>
+    <script src="web/escape.js?v=2.5"></script>
+    <script src="web/toast.js?v=2.5"></script>
+    <script src="web/api-prefix.js?v=2.7"></script>
+    <script src="web/api-auth.js?v=2.5"></script>
+    <script src="web/api-client.js?v=2.5"></script>
+    <script src="web/sse-client.js?v=2.7"></script>
+    <script src="web/views/emergency.js?v=2.7"></script>
+    <script src="web/views/controllers-inline.js?v=2.7"></script>
+    <script src="web/views/controllers-row.js?v=2.7"></script>
+    <script src="web/views/controllers-list.js?v=2.7"></script>
+    <script src="web/views/controller-compact.js?v=2.7"></script>
+    <script src="web/views/controller-detail.js?v=2.7"></script>
+    <script src="web/views/controllers.js?v=2.7"></script>
+    <script src="web/views/users-form.js?v=2.7"></script>
+    <script src="web/views/users.js?v=2.7"></script>
+    <script src="web/views/users-batch.js?v=2.7"></script>
+    <script src="web/views/users-batch-submit.js?v=2.7"></script>
+    <script src="web/views/monitor-ribbon.js?v=2.7"></script>
+    <script src="web/views/monitor-grid.js?v=2.7"></script>
+    <script src="web/views/monitor-doors.js?v=2.7"></script>
+    <script src="web/views/monitor-events.js?v=2.7"></script>
+    <script src="web/views/monitor.js?v=2.7"></script>
+    <script src="web/views/history.js?v=2.7"></script>
+    <script src="web/views/command-center.js?v=2.7"></script>
+    <script src="app.js?v=2.7"></script>
+</body>
+</html>

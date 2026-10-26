@@ -6,6 +6,8 @@ import * as Icons from "lucide-react";
 import Image from "next/image";
 import {
     ArrowUpRight,
+    ChevronRight,
+    Search,
     Timer,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -16,7 +18,6 @@ import { AnnouncementModal } from "@/components/main-dashboard/announcement-moda
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { GlassCard } from "@/components/command-center/GlassCard";
 import { AnimatedBackground } from "@/components/command-center/AnimatedBackground";
 import { Announcement } from "@/types/announcement";
 
@@ -81,19 +82,25 @@ const CATEGORY_META: Record<SubsystemCategory, { title: string; description: str
     },
 };
 
-const HEADER_OFFSET_EXPANDED = 140; // px
-const HEADER_OFFSET_COMPACT = 100; // px
+const CATEGORY_CODE: Record<SubsystemCategory, string> = {
+    Operations: "OPS",
+    "Customer & Engagement": "C&E",
+    "Corporate Services": "CORP",
+    "Governance & Assurance": "GOV",
+    "Monitoring & Oversight": "MON",
+};
 
+const HEADER_TOP_PAD = 96; // px — fixed compact offset
 
 function normalize(s: string) {
     return (s || "").toLowerCase().trim();
 }
 
-function filterSubsystems(items: SubsystemItem[], q: string): SubsystemItem[] {
+function filterSubsystems(items: SubsystemItem[], q: string, statusFilter: "ALL" | Status = "ALL"): SubsystemItem[] {
     const query = normalize(q);
-    if (!query) return items;
-
     return items.filter((x) => {
+        if (statusFilter !== "ALL" && x.status !== statusFilter) return false;
+        if (!query) return true;
         const subHay = x.submodules.map((m) => `${m.title} ${m.status ?? ""}`).join(" ");
         const hay = [x.title, x.subtitle ?? "", x.tag ?? "", x.category, x.status, x.href ?? "", subHay].join(" ");
         return normalize(hay).includes(query);
@@ -117,17 +124,17 @@ function groupByCategory(items: SubsystemItem[]) {
 function StatusBadge({ status }: { status: Status }) {
     if (status === "active") {
         return (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-300">
-                <Icons.CheckCircle2 className="h-3.5 w-3.5" />
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-px text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-300">
+                <Icons.CheckCircle2 className="h-3 w-3" />
                 Active
             </span>
         );
     }
     return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-zinc-500/10 px-2 py-0.5 text-[11px] font-medium text-zinc-700 ring-1 ring-zinc-500/15 dark:text-zinc-200">
-            <Timer className="h-3.5 w-3.5" />
-            Coming Soon
-        </span>
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-zinc-500/10 px-1.5 py-px text-[10px] font-bold uppercase tracking-wider text-zinc-600 ring-1 ring-zinc-500/15 dark:text-zinc-300">
+            <Timer className="h-3 w-3" />
+            Soon
+            </span>
     );
 }
 
@@ -143,9 +150,9 @@ function HoverLift({
     return (
         <div
             className={cn(
-                "transition-all duration-200 ease-out",
+                "transition-all duration-150 ease-out",
                 !disabled &&
-                "hover:-translate-y-[3px] hover:shadow-[0_18px_60px_-30px_rgba(0,0,0,0.35)] active:translate-y-0 active:scale-[0.99]",
+                "hover:-translate-y-[1px] active:translate-y-0",
                 disabled && "opacity-95",
                 className
             )}
@@ -155,25 +162,36 @@ function HoverLift({
     );
 }
 
-
-
-
 const containerVars = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.05,
+            staggerChildren: 0.02,
         },
     },
 };
 
 const itemVars = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    hidden: { opacity: 0, y: 4 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.15 } },
 };
 
 export type DashboardRegistryItem = Omit<SubsystemItem, "icon">;
+
+function useClock() {
+    const [now, setNow] = React.useState<string>("--:--:--");
+    React.useEffect(() => {
+        const tick = () => {
+            const d = new Date();
+            setNow(d.toLocaleTimeString("en-GB", { hour12: false }));
+        };
+        tick();
+        const t = setInterval(tick, 1000);
+        return () => clearInterval(t);
+    }, []);
+    return now;
+}
 
 export default function MainDashboardClient({
     initialSubsystems,
@@ -244,16 +262,10 @@ export default function MainDashboardClient({
         }
     };
 
-    const q = ""; // State setter removed as search is managed by CommandPalette component logic
-    const [isCompactHeader, setIsCompactHeader] = React.useState(false);
-
-    React.useEffect(() => {
-        const onScroll = () => setIsCompactHeader(window.scrollY > 36);
-        onScroll();
-        window.addEventListener("scroll", onScroll, { passive: true });
-
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
+    const [query, setQuery] = React.useState("");
+    const [catFilter, setCatFilter] = React.useState<"ALL" | SubsystemCategory>("ALL");
+    const [statusFilter, setStatusFilter] = React.useState<"ALL" | Status>("ALL");
+    const clock = useClock();
 
     const trackAccess = (id: string) => {
         // Access tracking disabled
@@ -270,7 +282,18 @@ export default function MainDashboardClient({
         });
     }, [initialSubsystems]);
 
-    const filtered = React.useMemo(() => filterSubsystems(resolvedSubsystems, q), [resolvedSubsystems, q]);
+    const categoryCounts = React.useMemo(() => {
+        const map = new Map<SubsystemCategory, number>();
+        resolvedSubsystems.forEach((s) => map.set(s.category, (map.get(s.category) ?? 0) + 1));
+        return map;
+    }, [resolvedSubsystems]);
+
+    const filtered = React.useMemo(() => {
+        const byStatus = filterSubsystems(resolvedSubsystems, query, statusFilter === "ALL" ? "ALL" : statusFilter);
+        if (catFilter === "ALL") return byStatus;
+        return byStatus.filter((s) => s.category === catFilter);
+    }, [resolvedSubsystems, query, statusFilter, catFilter]);
+
     const grouped = React.useMemo(() => groupByCategory(filtered), [filtered]);
 
     const totalActiveVisible = React.useMemo(
@@ -278,130 +301,183 @@ export default function MainDashboardClient({
         [resolvedSubsystems]
     );
 
-    const headerOffset = isCompactHeader ? HEADER_OFFSET_COMPACT : HEADER_OFFSET_EXPANDED;
-
     return (
         <div className="relative min-h-screen flex flex-col overflow-x-hidden">
-            <AnimatedBackground />
+            <div className="opacity-70 dark:opacity-50">
+                <AnimatedBackground />
+            </div>
 
-
-            {/* MODERN FLOATING HEADER */}
-            <header className={cn(
-                "fixed inset-x-0 top-0 z-50 transition-all duration-300 px-4 sm:px-8",
-                isCompactHeader ? "pt-4" : "pt-6"
-            )}>
-                <div className={cn(
-                    "mx-auto w-full max-w-[1400px] rounded-2xl border transition-all duration-300",
-                    "bg-white/60 dark:bg-slate-950/60 backdrop-blur-2xl",
-                    "border-slate-900/10 dark:border-white/10",
-                    "shadow-[0_8px_32px_0_rgba(0,0,0,0.05)] dark:shadow-[0_16px_48px_0_rgba(0,0,0,0.4)]",
-                    isCompactHeader ? "py-2.5 px-4" : "py-4 px-6"
-                )}>
-                    <div className="flex items-center justify-between gap-4">
-                        {/* Logo & System HUD */}
-                        <div className="flex items-center gap-6 min-w-0">
-                            <div className="flex items-center gap-3 shrink-0">
-                                <div className={cn(
-                                    "flex items-center justify-center rounded-xl bg-slate-900/5 dark:bg-white/5 border border-slate-900/10 dark:border-white/10 shadow-xs transition-all overflow-hidden p-1.5",
-                                    isCompactHeader ? "h-8 w-8" : "h-10 w-10"
-                                )}>
-                                    <Image 
-                                        src="/vos.png" 
-                                        alt="VOS Logo" 
-                                        width={isCompactHeader ? 20 : 24} 
-                                        height={isCompactHeader ? 20 : 24}
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <div className="flex flex-col leading-none">
-                                    <span className={cn(
-                                        "font-black tracking-tighter uppercase italic leading-none",
-                                        isCompactHeader ? "text-base" : "text-xl sm:text-2xl"
-                                    )}>
-                                        VOS ERP
-                                    </span>
-                                    {!isCompactHeader && (
-                                        <span className="mt-1 text-[8px] font-black tracking-[0.2em] uppercase text-slate-500 opacity-60">Command Center</span>
-                                    )}
-                                </div>
+            {/* SLIM HUD HEADER (~52px) */}
+            <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-900/10 bg-white/80 px-3 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
+                <div className="mx-auto flex h-[52px] w-full max-w-[1400px] items-center justify-between gap-3 py-2">
+                    {/* Left: logo + HUD readouts */}
+                    <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex shrink-0 items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-slate-900/10 bg-slate-900/5 p-1 dark:border-white/10 dark:bg-white/5">
+                                <Image
+                                    src="/vos.png"
+                                    alt="VOS Logo"
+                                    width={18}
+                                    height={18}
+                                    className="object-contain"
+                                />
                             </div>
-
-                            {/* System HUD Status (Integrated Stats) */}
-                            <div className={cn(
-                                "hidden md:flex items-center gap-2 border-l border-slate-900/10 dark:border-white/10 pl-6 h-8 transition-opacity duration-300",
-                                isCompactHeader ? "opacity-0 scale-95 pointer-events-none" : "opacity-100"
-                            )}>
-                                <div className="flex flex-col gap-0.5">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-[10px] font-black tracking-widest uppercase text-slate-400">{resolvedSubsystems.length} SYSTEMS SYNCED</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-1 w-1 rounded-full bg-cyan-500" />
-                                        <span className="text-[10px] font-black tracking-widest uppercase text-slate-400">{totalActiveVisible} CORES ONLINE</span>
-                                    </div>
-                                </div>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-sm font-black uppercase italic leading-none tracking-tighter">
+                                    VOS ERP
+                                </span>
+                                <span className="mt-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-slate-500 opacity-70 dark:text-slate-400">OPS-CONSOLE</span>
                             </div>
                         </div>
-
-                        {/* Interactive Controls */}
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center pr-3 border-r border-slate-900/10 dark:border-white/10 mr-1">
-                                <CommandPalette subsystems={resolvedSubsystems} />
-                            </div>
-                            <UserMenu fullName={userFullName} email={userEmail} isDealerOver={isDealerOver} />
+                        <div className="hidden items-center gap-3 border-l border-slate-900/10 pl-3 font-mono text-[10px] font-bold uppercase tracking-widest text-slate-500 md:flex dark:text-slate-400">
+                            <span className="flex items-center gap-1.5">
+                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                                {resolvedSubsystems.length} SYSTEMS SYNCED
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
+                                {totalActiveVisible} CORES ONLINE
+                            </span>
+                            <span className="hidden tabular-nums text-slate-400 lg:inline dark:text-slate-500">{clock}</span>
                         </div>
+                    </div>
+
+                    {/* Right: controls */}
+                    <div className="flex items-center gap-2">
+                        <div className="hidden items-center border-r border-slate-900/10 pr-2 sm:flex dark:border-white/10">
+                            <CommandPalette subsystems={resolvedSubsystems} />
+                        </div>
+                        <UserMenu fullName={userFullName} email={userEmail} isDealerOver={isDealerOver} />
                     </div>
                 </div>
             </header>
 
-            {/* CONTENT (push down for fixed header) */}
+            {/* CONTENT */}
             <main
-                className="mx-auto w-full max-w-[1400px] px-4 pb-12 sm:px-8 sm:pb-16 flex-1"
-                style={{ paddingTop: headerOffset }}
+                className="mx-auto w-full max-w-[1400px] flex-1 px-3 pb-8 sm:px-4"
+                style={{ paddingTop: HEADER_TOP_PAD }}
             >
+                {/* COMPACT CONTROL STRIP */}
+                <div className="mb-3 flex flex-col gap-2 border border-slate-900/10 bg-white/60 px-2.5 py-2 backdrop-blur dark:border-white/10 dark:bg-slate-950/60">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        {/* Category tabs */}
+                        <div className="flex flex-wrap items-center gap-1" role="tablist" aria-label="Category filter">
+                            <button
+                                onClick={() => setCatFilter("ALL")}
+                                className={cn(
+                                    "rounded-sm border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
+                                    catFilter === "ALL"
+                                        ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300"
+                                        : "border-slate-900/10 text-slate-500 hover:border-cyan-500/30 hover:text-slate-800 dark:border-white/10 dark:text-slate-400 dark:hover:text-slate-200"
+                                )}
+                            >
+                                ALL [{resolvedSubsystems.length}]
+                            </button>
+                            {CATEGORY_ORDER.map((c) => (
+                                <button
+                                    key={c}
+                                    onClick={() => setCatFilter(c)}
+                                    className={cn(
+                                        "rounded-sm border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
+                                        catFilter === c
+                                            ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300"
+                                            : "border-slate-900/10 text-slate-500 hover:border-cyan-500/30 hover:text-slate-800 dark:border-white/10 dark:text-slate-400 dark:hover:text-slate-200"
+                                    )}
+                                >
+                                    {CATEGORY_CODE[c]} [{categoryCounts.get(c) ?? 0}]
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="mx-1 hidden h-4 w-px bg-slate-900/10 sm:block dark:bg-white/10" />
+
+                        {/* Status segmented */}
+                        <div className="flex items-center gap-1" role="group" aria-label="Status filter">
+                            {(["ALL", "active", "comingSoon"] as const).map((s) => (
+                                <button
+                                    key={s}
+                                    onClick={() => setStatusFilter(s)}
+                                    className={cn(
+                                        "rounded-sm border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
+                                        statusFilter === s
+                                            ? s === "active"
+                                                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                                : s === "comingSoon"
+                                                    ? "border-zinc-500/40 bg-zinc-500/10 text-zinc-700 dark:text-zinc-200"
+                                                    : "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300"
+                                            : "border-slate-900/10 text-slate-500 hover:border-cyan-500/30 dark:border-white/10 dark:text-slate-400"
+                                    )}
+                                >
+                                    {s === "ALL" ? "ALL" : s === "active" ? "ACTIVE" : "SOON"}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative ml-auto flex min-w-[160px] flex-1 items-center sm:max-w-[240px] sm:flex-none">
+                            <Search className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-slate-400" />
+                            <input
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="FILTER SYSTEMS..."
+                                aria-label="Filter subsystems"
+                                className="h-7 w-full rounded-sm border border-slate-900/10 bg-white/70 pl-7 pr-2 font-mono text-[11px] uppercase tracking-wider text-slate-800 placeholder:text-slate-400 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-200"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                        <span className="truncate">
+                            {catFilter === "ALL" ? "ALL SECTORS" : CATEGORY_META[catFilter].title.toUpperCase()} {" // "} {statusFilter === "ALL" ? "ANY STATUS" : statusFilter === "active" ? "ACTIVE ONLY" : "SOON ONLY"}
+                        </span>
+                        <span className="shrink-0 tabular-nums">SHOWING {filtered.length}/{resolvedSubsystems.length}</span>
+                    </div>
+                </div>
+
                 <motion.div
                     variants={containerVars}
                     initial="hidden"
                     animate="show"
-                    className="space-y-10"
+                    className="space-y-4"
                 >
                     {filtered.length === 0 ? (
-                            <Card className="border bg-background/50 p-8 backdrop-blur">
-                                <div className="text-sm text-muted-foreground">
-                                    {q.trim()
-                                        ? `No visible subsystems match "${q.trim()}" for your account.`
-                                        : "You do not have access to any subsystems. Please contact your Administrator."}
-                                </div>
-                            </Card>
-                        ) : (
-                            grouped.map((group) => {
-                                const meta = CATEGORY_META[group.category];
-                                return (
-                                    <motion.div key={group.category} variants={itemVars}>
-                                        <div className="mb-4 px-1">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <div className="text-xl md:text-2xl font-black tracking-tighter uppercase italic text-slate-800 dark:text-slate-200">{meta.title}</div>
-                                                <span className="inline-flex items-center rounded-full bg-slate-900/5 px-2.5 py-0.5 text-[10px] font-black text-slate-700 dark:text-slate-300 ring-1 ring-slate-900/10 tracking-widest uppercase">
-                                                    {group.items.length} Subsystem/s
-                                                </span>
-                                            </div>
-                                            <div className="mt-1 text-xs font-bold tracking-widest text-slate-500 opacity-70 uppercase leading-none">{meta.description}</div>
-                                        </div>
+                        <Card className="border bg-background/50 p-6 backdrop-blur">
+                            <div className="text-sm text-muted-foreground">
+                                {query.trim()
+                                    ? `No visible subsystems match "${query.trim()}" for your account.`
+                                    : "You do not have access to any subsystems. Please contact your Administrator."}
+                            </div>
+                        </Card>
+                    ) : (
+                        grouped.map((group) => {
+                            const meta = CATEGORY_META[group.category];
+                            return (
+                                <motion.section key={group.category} variants={itemVars}>
+                                    {/* Slim mono divider */}
+                                    <div className="mb-1 flex items-center gap-2 border-b border-slate-900/10 px-1 pb-1 dark:border-white/10">
+                                        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                                            {CATEGORY_CODE[group.category]} {" // "} {meta.title}
+                                        </span>
+                                        <span className="font-mono text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
+                                            [{group.items.length}]
+                                        </span>
+                                        <span className="hidden truncate font-mono text-[9px] uppercase tracking-widest text-slate-400/70 sm:inline dark:text-slate-500/70">
+                                            — {meta.description}
+                                        </span>
+                                    </div>
 
-                                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                            {group.items.map((s) => (
-                                                <SubsystemTile
-                                                    key={s.id}
-                                                    subsystem={s}
-                                                    onAccess={() => trackAccess(s.id)}
-                                                />
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                );
-                            })
-                        )}
+                                    <div className="flex flex-col gap-1">
+                                        {group.items.map((s) => (
+                                            <SubsystemRow
+                                                key={s.id}
+                                                subsystem={s}
+                                                onAccess={() => trackAccess(s.id)}
+                                            />
+                                        ))}
+                                    </div>
+                                </motion.section>
+                            );
+                        })
+                    )}
                 </motion.div>
             </main>
 
@@ -417,132 +493,114 @@ export default function MainDashboardClient({
     );
 }
 
-function SubsystemTile({ subsystem, onAccess, className }: { subsystem: SubsystemItem; onAccess?: () => void; className?: string }) {
+function SubsystemRow({ subsystem, onAccess, className }: { subsystem: SubsystemItem; onAccess?: () => void; className?: string }) {
     const isComing = subsystem.status === "comingSoon";
     const Icon = subsystem.icon;
+    const interactive = !isComing && !!subsystem.href;
 
-    let accent: "cyan" | "indigo" | "emerald" | "amber" | "violet" | "rose" = "cyan";
-    const subId = subsystem.id.toUpperCase();
-
-    if (subId === "HRM") accent = "cyan";
-    else if (subId === "FIN") accent = "emerald";
-    else if (subId === "SCM") accent = "amber";
-    else if (subId === "CRM") accent = "indigo";
-    else if (subId === "BI") accent = "violet";
-    else if (subId === "ARF") accent = "rose";
-    else if (subsystem.category === "Customer & Engagement") accent = "indigo";
-    else if (subsystem.category === "Operations") accent = "amber";
-    else if (subsystem.category === "Governance & Assurance") accent = "rose";
-    else if (subsystem.category === "Monitoring & Oversight") accent = "violet";
-
-    const content = (
-        <GlassCard
-            accent={accent}
+    const row = (
+        <div
             className={cn(
-                "h-full p-5 flex flex-col justify-between !shadow-none",
-                isComing && "cursor-not-allowed opacity-70",
+                "group flex items-center gap-2.5 border border-slate-900/10 bg-white/60 px-2.5 py-1.5 backdrop-blur transition-colors",
+                "hover:border-cyan-500/30 hover:bg-white/80",
+                "dark:border-white/10 dark:bg-slate-950/60 dark:hover:border-cyan-500/30 dark:hover:bg-slate-900/70",
+                !interactive && "cursor-not-allowed opacity-70",
                 className
             )}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-10px" }}
         >
-            <div className="relative flex flex-col h-full gap-3">
-                {/* Top Row: Icon/Tag + Meta */}
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-2.5">
-                        <div
-                            className={cn(
-                                "flex shrink-0 items-center justify-center rounded-xl bg-slate-900/5 dark:bg-white/5 border border-slate-900/10 dark:border-white/10 shadow-sm backdrop-blur",
-                                "h-10 w-10"
-                            )}
-                        >
-                            <Icon className={cn(
-                                "text-slate-800 dark:text-slate-200",
-                                "h-4 w-4"
-                            )} />
-                        </div>
+            {/* Status dot */}
+            <span
+                className={cn(
+                    "h-1.5 w-1.5 shrink-0 rounded-full",
+                    subsystem.status === "active"
+                        ? "animate-pulse bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]"
+                        : "bg-zinc-400 dark:bg-zinc-600"
+                )}
+                aria-hidden
+            />
 
-                        {subsystem.tag ? (
-                            <span className="shrink-0 inline-flex items-center rounded-lg bg-slate-200/50 px-2 py-0.5 text-[9px] font-black tracking-[0.2em] uppercase text-slate-900 ring-1 ring-slate-900/10 dark:bg-white/10 dark:text-white dark:ring-white/20">
-                                {subsystem.tag}
-                            </span>
-                        ) : null}
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1.5 text-slate-400 shrink-0">
-                        <div className="flex items-center gap-2">
-                            {isComing ? (
-                                <Timer className="h-4 w-4 opacity-60" />
-                            ) : (
-                                <ArrowUpRight className="h-4 w-4 opacity-60" />
-                            )}
-                        </div>
-                        <StatusBadge status={subsystem.status} />
-                    </div>
-                </div>
-
-                {/* Middle Row: Title (Full Width) */}
-                <div className="min-w-0">
-                    <h3 className={cn(
-                        "font-black uppercase italic tracking-tighter leading-[0.85] break-words text-xl mb-0.5",
-                        "drop-shadow-[0_2px_3px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]",
-                        accent === "cyan" ? "text-cyan-700 dark:text-cyan-400" :
-                            accent === "indigo" ? "text-indigo-700 dark:text-indigo-400" :
-                                accent === "emerald" ? "text-emerald-700 dark:text-emerald-400" :
-                                    accent === "amber" ? "text-amber-700 dark:text-amber-400" :
-                                        accent === "rose" ? "text-rose-700 dark:text-rose-400" :
-                                            "text-violet-700 dark:text-violet-400"
-                    )}>
-                        {subsystem.title}
-                    </h3>
-
-                    {subsystem.subtitle ? (
-                        <p className="text-[10px] font-bold tracking-tight text-slate-500 italic leading-snug line-clamp-1 opacity-70">
-                            {subsystem.subtitle}
-                        </p>
-                    ) : null}
-                </div>
-
-                {/* Bottom Row: Category + Submodules */}
-                <div className="mt-auto pt-3 flex flex-col gap-3 border-t border-slate-900/5 dark:border-white/5">
-                    <div className="flex flex-wrap gap-1.5">
-                        {subsystem.submodules.slice(0, 4).map((m) => (
-                            <Badge
-                                key={m.id}
-                                variant="outline"
-                                className={cn(
-                                    "h-5 px-2 text-[9px] font-black tracking-widest uppercase bg-slate-200/30 dark:bg-black/20 border-slate-900/10 dark:border-white/10 text-slate-800 dark:text-slate-300",
-                                    m.status === "comingSoon" && "opacity-60"
-                                )}
-                            >
-                                {m.title}
-                            </Badge>
-                        ))}
-                        {subsystem.submodules.length > 4 && (
-                            <span className="text-[9px] font-black text-slate-400">+{subsystem.submodules.length - 4} MORE</span>
-                        )}
-                    </div>
-
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500/70">
-                        {subsystem.category}
-                    </div>
-                </div>
+            {/* Icon */}
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-900/10 bg-slate-900/5 dark:border-white/10 dark:bg-white/5">
+                <Icon className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
             </div>
-        </GlassCard>
+
+            {/* Title + tag + category */}
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+                <h3 className="truncate text-[13px] font-bold leading-tight tracking-tight text-slate-800 dark:text-slate-100">
+                    {subsystem.title}
+                </h3>
+                {subsystem.tag ? (
+                    <span className="hidden shrink-0 rounded-sm bg-slate-900/5 px-1.5 py-px font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-slate-600 ring-1 ring-slate-900/10 sm:inline dark:bg-white/5 dark:text-slate-300 dark:ring-white/10">
+                        {subsystem.tag}
+                    </span>
+                ) : null}
+                <span className="hidden shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 md:inline dark:text-slate-500">
+                    {CATEGORY_CODE[subsystem.category]}
+                </span>
+                {subsystem.subtitle ? (
+                    <span className="hidden min-w-0 flex-1 truncate text-[11px] italic text-slate-500 lg:inline dark:text-slate-400">
+                        {subsystem.subtitle}
+                    </span>
+                ) : null}
+            </div>
+
+            {/* Submodules */}
+            <div className={cn("hidden items-center gap-1 md:flex", isComing && "opacity-50")}>
+                {subsystem.submodules.slice(0, 3).map((m) => (
+                    <Badge
+                        key={m.id}
+                        variant="outline"
+                        className={cn(
+                            "h-4 shrink-0 px-1.5 font-mono text-[9px] font-bold uppercase tracking-wider",
+                            m.status === "comingSoon" && "opacity-60"
+                        )}
+                    >
+                        {m.title}
+                    </Badge>
+                ))}
+                {subsystem.submodules.length > 3 && (
+                    <span className="font-mono text-[9px] font-bold text-slate-400">+{subsystem.submodules.length - 3}</span>
+                )}
+            </div>
+
+            <StatusBadge status={subsystem.status} />
+
+            {/* Quick launch */}
+            <span className={cn(
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                interactive
+                    ? "border-slate-900/10 text-slate-400 group-hover:border-cyan-500/40 group-hover:text-cyan-600 dark:border-white/10 dark:text-slate-500 dark:group-hover:text-cyan-300"
+                    : "border-slate-900/5 text-slate-300 dark:border-white/5 dark:text-slate-600"
+            )}>
+                {isComing ? <Timer className="h-3.5 w-3.5" /> : interactive ? <ChevronRight className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}
+            </span>
+        </div>
     );
 
-    if (isComing || !subsystem.href) return <HoverLift disabled className={className}>{content}</HoverLift>;
+    if (!interactive) {
+        return (
+            <HoverLift disabled className={className}>
+                <div
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+                    tabIndex={0}
+                    aria-label={`${subsystem.title} (coming soon)`}
+                    aria-disabled="true"
+                >
+                    {row}
+                </div>
+            </HoverLift>
+        );
+    }
 
     return (
         <HoverLift className={className}>
             <Link
-                href={subsystem.href}
+                href={subsystem.href as string}
                 onClick={onAccess}
-                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-[2rem] h-full"
+                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                 aria-label={`Open ${subsystem.title}`}
             >
-                {content}
+                {row}
             </Link>
         </HoverLift>
     );

@@ -43,5 +43,5 @@ next-env.d.ts
 # agent workflow
 /.agents/
 
-# antigravity
 skills-lock.json
+deye-accounts.json
