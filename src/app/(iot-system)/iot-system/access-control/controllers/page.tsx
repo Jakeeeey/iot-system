@@ -1,5 +1,5 @@
-import { ControllersView } from "@/modules/iot-system/access-control";
+import { AccessConsoleFrame } from "@/modules/iot-system/access-control";
 
 export default function AccessControllersPage() {
-    return <ControllersView />;
+    return <AccessConsoleFrame initialTab="tab-controllers" />;
 }

@@ -1,5 +1,5 @@
-import { ExtendedView } from "@/modules/iot-system/access-control";
+import { AccessConsoleFrame } from "@/modules/iot-system/access-control";
 
 export default function AccessExtendedPage() {
-    return <ExtendedView />;
+    return <AccessConsoleFrame initialTab="tab-extended" />;
 }

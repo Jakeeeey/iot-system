@@ -1,5 +1,5 @@
-import { HistoryView } from "@/modules/iot-system/access-control";
+import { AccessConsoleFrame } from "@/modules/iot-system/access-control";
 
 export default function AccessHistoryPage() {
-    return <HistoryView />;
+    return <AccessConsoleFrame initialTab="tab-history" />;
 }

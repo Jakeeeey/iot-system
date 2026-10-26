@@ -1,5 +1,5 @@
-import { MonitorView } from "@/modules/iot-system/access-control";
+import { AccessConsoleFrame } from "@/modules/iot-system/access-control";
 
 export default function AccessMonitorPage() {
-    return <MonitorView />;
+    return <AccessConsoleFrame initialTab="tab-monitor" />;
 }

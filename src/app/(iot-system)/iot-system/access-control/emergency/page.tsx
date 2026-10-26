@@ -1,5 +1,5 @@
-import { EmergencyView } from "@/modules/iot-system/access-control";
+import { AccessConsoleFrame } from "@/modules/iot-system/access-control";
 
 export default function AccessEmergencyPage() {
-    return <EmergencyView />;
+    return <AccessConsoleFrame initialTab="tab-command" emergencyTrigger={true} />;
 }

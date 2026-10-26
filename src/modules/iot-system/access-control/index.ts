@@ -12,3 +12,4 @@ export { HistoryView } from "./components/history-view";
 export { EmergencyView } from "./components/emergency-view";
 export { ExtendedView } from "./components/extended-view";
 export { AccessHeader } from "./components/access-header";
+export { AccessConsoleFrame } from "./components/access-console-frame";

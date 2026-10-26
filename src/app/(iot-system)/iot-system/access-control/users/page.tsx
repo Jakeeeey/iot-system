@@ -1,5 +1,5 @@
-import { UsersView } from "@/modules/iot-system/access-control";
+import { AccessConsoleFrame } from "@/modules/iot-system/access-control";
 
 export default function AccessUsersPage() {
-    return <UsersView />;
+    return <AccessConsoleFrame initialTab="tab-users" />;
 }

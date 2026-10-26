@@ -148,8 +148,39 @@ const tabMeta = {
     }
 };
 
+function resolveTabKey(raw) {
+    if (!raw) return null;
+    let k = String(raw).trim().toLowerCase();
+    if (k.startsWith('#')) k = k.slice(1);
+    if (!k.startsWith('tab-')) {
+        if (k === 'command' || k === 'command-center' || k === 'dashboard') k = 'tab-command';
+        else if (k === 'controllers' || k === 'controller' || k === 'doors' || k === 'door') k = 'tab-controllers';
+        else if (k === 'users' || k === 'user' || k === 'privileges') k = 'tab-users';
+        else if (k === 'monitor' || k === 'real-time' || k === 'monitoring') k = 'tab-monitor';
+        else if (k === 'history' || k === 'records' || k === 'logs') k = 'tab-history';
+        else if (k === 'extended' || k === 'functions' || k === 'settings') k = 'tab-extended';
+        else k = 'tab-' + k;
+    }
+    return tabMeta[k] ? k : null;
+}
+
+function getInitialTab() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const queryTab = params.get('tab');
+        const resolvedQuery = resolveTabKey(queryTab);
+        if (resolvedQuery) return resolvedQuery;
+
+        const hashTab = window.location.hash;
+        const resolvedHash = resolveTabKey(hashTab);
+        if (resolvedHash) return resolvedHash;
+    } catch (e) {}
+    return activeTab || 'tab-command';
+}
+
 function switchActiveTab(target) {
     if (!target) return;
+    target = resolveTabKey(target) || target;
 
     // Synchronize Desktop / Drawer sidebar items
     document.querySelectorAll('.nav-item').forEach(i => {
@@ -204,6 +235,12 @@ function switchActiveTab(target) {
         if (typeof renderControllers === 'function') renderControllers();
         if (typeof renderStats === 'function') renderStats();
     }
+
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'ACCESS_TAB_CHANGED', tab: target }, '*');
+        }
+    } catch (e) {}
 
     closeMobileDrawer();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -283,7 +320,39 @@ function setupTabs() {
             if (target) switchActiveTab(target);
         });
     });
-    switchActiveTab(activeTab || 'tab-command');
+
+    document.querySelectorAll('.bottom-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const target = item.dataset.tab;
+            if (target) switchActiveTab(target);
+        });
+    });
+
+    const initTab = getInitialTab();
+    switchActiveTab(initTab);
+
+    try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('emergency') === '1' || params.get('tab') === 'emergency') {
+            setTimeout(() => {
+                if (typeof triggerEmergencyOpenConfirm === 'function') {
+                    triggerEmergencyOpenConfirm();
+                }
+            }, 600);
+        }
+    } catch (e) {}
+
+    window.addEventListener('hashchange', () => {
+        const hashTab = getInitialTab();
+        if (hashTab) switchActiveTab(hashTab);
+    });
+
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SET_ACCESS_TAB') {
+            const resolved = resolveTabKey(event.data.tab);
+            if (resolved) switchActiveTab(resolved);
+        }
+    });
 }
 
 // Global window bindings for inline HTML attribute calls
@@ -352,4 +421,5 @@ window.initSidebarCollapse = initSidebarCollapse;
 window.uiDispatchAction = uiDispatchAction;
 window.uiCoerceArg = uiCoerceArg;
 window.setupTabs = setupTabs;
+window.resolveTabKey = resolveTabKey;
 window.isCurrentlyEditing = isCurrentlyEditing;
