@@ -294,6 +294,14 @@ function handleStandaloneResponse(path: string[]) {
         });
     }
 
+    if (routeKey.startsWith("scan")) {
+        return NextResponse.json({
+            success: true,
+            message: "Subnet scan completed. 2 Controllers online.",
+            controllers: STANDALONE_CONTROLLERS,
+        });
+    }
+
     if (routeKey.startsWith("history/download")) {
         return NextResponse.json({
             success: true,
@@ -302,14 +310,49 @@ function handleStandaloneResponse(path: string[]) {
         });
     }
 
-    if (routeKey.startsWith("history/clear")) {
+    if (routeKey.startsWith("history/clear") || routeKey.startsWith("events/clear")) {
         return NextResponse.json({
             success: true,
             message: "History log buffer cleared.",
         });
     }
 
-    if (routeKey.startsWith("history")) {
+    if (routeKey.startsWith("history/hourly")) {
+        const hourlyData = [
+            { hour: 0, granted: 0, denied: 0, total: 0 },
+            { hour: 1, granted: 0, denied: 0, total: 0 },
+            { hour: 2, granted: 0, denied: 0, total: 0 },
+            { hour: 3, granted: 0, denied: 0, total: 0 },
+            { hour: 4, granted: 1, denied: 0, total: 1 },
+            { hour: 5, granted: 3, denied: 0, total: 3 },
+            { hour: 6, granted: 12, denied: 1, total: 13 },
+            { hour: 7, granted: 42, denied: 3, total: 45 },
+            { hour: 8, granted: 65, denied: 3, total: 68 },
+            { hour: 9, granted: 49, denied: 3, total: 52 },
+            { hour: 10, granted: 39, denied: 2, total: 41 },
+            { hour: 11, granted: 57, denied: 3, total: 60 },
+            { hour: 12, granted: 52, denied: 3, total: 55 },
+            { hour: 13, granted: 45, denied: 3, total: 48 },
+            { hour: 14, granted: 59, denied: 3, total: 62 },
+            { hour: 15, granted: 66, denied: 4, total: 70 },
+            { hour: 16, granted: 60, denied: 4, total: 64 },
+            { hour: 17, granted: 38, denied: 2, total: 40 },
+            { hour: 18, granted: 23, denied: 2, total: 25 },
+            { hour: 19, granted: 13, denied: 1, total: 14 },
+            { hour: 20, granted: 8, denied: 0, total: 8 },
+            { hour: 21, granted: 4, denied: 0, total: 4 },
+            { hour: 22, granted: 1, denied: 0, total: 1 },
+            { hour: 23, granted: 0, denied: 0, total: 0 },
+        ];
+        return NextResponse.json({
+            success: true,
+            hours: hourlyData,
+            data: { hours: hourlyData },
+            total: hourlyData.reduce((acc, h) => acc + h.total, 0),
+        });
+    }
+
+    if (routeKey.startsWith("history") || routeKey.startsWith("events")) {
         return NextResponse.json({
             success: true,
             events: STANDALONE_EVENTS,

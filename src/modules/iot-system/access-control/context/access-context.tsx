@@ -193,7 +193,9 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
         for (const ctrl of controllers) {
             const defaultDoors = [1, 2, 3, 4];
             for (const doorNum of defaultDoors) {
-                const config = ctrl.doors?.[doorNum];
+                const config = Array.isArray(ctrl.doors)
+                    ? (ctrl.doors as any[]).find((d: any) => d.doorNumber === doorNum || d.id === doorNum)
+                    : ctrl.doors?.[doorNum];
                 flat.push({
                     id: `${ctrl.serialNumber}-${doorNum}`,
                     serialNumber: ctrl.serialNumber,

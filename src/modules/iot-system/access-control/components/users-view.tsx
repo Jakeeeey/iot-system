@@ -638,7 +638,10 @@ export function UsersView() {
                                                 <div className="grid grid-cols-4 gap-2">
                                                     {[1, 2, 3, 4].map((dNum) => {
                                                         const isChecked = assignedDoors.includes(dNum);
-                                                        const doorName = ctrl.doors?.[dNum]?.name || `Door ${dNum}`;
+                                                        const doorObj = Array.isArray(ctrl.doors)
+                                                            ? (ctrl.doors as any[]).find((d: any) => d.doorNumber === dNum || d.id === dNum)
+                                                            : ctrl.doors?.[dNum];
+                                                        const doorName = doorObj?.name || `Door ${dNum}`;
                                                         return (
                                                             <button
                                                                 type="button"
