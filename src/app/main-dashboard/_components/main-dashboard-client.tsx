@@ -197,15 +197,53 @@ export default function MainDashboardClient({
     initialSubsystems,
     userFullName,
     userEmail,
-    announcements
+    announcements,
+    isDealerOver = false
 }: {
     initialSubsystems: DashboardRegistryItem[];
     userFullName: string;
     userEmail: string;
     announcements?: Announcement[];
+    isDealerOver?: boolean;
 }) {
     const announcementsList = announcements || [];
-    const [showAnnouncement, setShowAnnouncement] = React.useState(announcementsList.length > 0);
+    const hasAnnouncements = announcementsList.length > 0;
+    const [showAnnouncement, setShowAnnouncement] = React.useState(hasAnnouncements);
+
+    // Helper to check if rankings modal should auto-popup (Fresh login + haven't closed yet)
+    const checkShouldAutoOpenRankings = React.useCallback(() => {
+        if (!isDealerOver) return false;
+        try {
+            const hasSeen = localStorage.getItem("dealerover_salesman_ranking") === "true";
+            const isFreshLogin = sessionStorage.getItem("just_logged_in") === "true";
+            // Must be fresh login and hasn't closed it yet
+            return isFreshLogin && !hasSeen;
+        } catch {
+            return false;
+        }
+    }, [isDealerOver]);
+
+    // Initial sequencing: if no announcement, check if fresh login & haven't seen rankings
+    React.useEffect(() => {
+        if (!hasAnnouncements && checkShouldAutoOpenRankings()) {
+            // Small timeout to guarantee global listener in layout is mounted
+            const timer = setTimeout(() => {
+                window.dispatchEvent(new CustomEvent("open-dealerover-salesman-rankings"));
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [hasAnnouncements, checkShouldAutoOpenRankings]);
+
+    // When announcement closes / finishes, check if fresh login & haven't seen rankings
+    const handleAnnouncementOpenChange = (open: boolean) => {
+        setShowAnnouncement(open);
+        if (!open && checkShouldAutoOpenRankings()) {
+            // Trigger rankings modal after announcement is dismissed
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent("open-dealerover-salesman-rankings"));
+            }, 300);
+        }
+    };
 
     const handleAcknowledge = async (memoIds: number[]) => {
         try {
@@ -309,7 +347,7 @@ export default function MainDashboardClient({
                         <div className="hidden items-center border-r border-slate-900/10 pr-2 sm:flex dark:border-white/10">
                             <CommandPalette subsystems={resolvedSubsystems} />
                         </div>
-                        <UserMenu fullName={userFullName} email={userEmail} />
+                        <UserMenu fullName={userFullName} email={userEmail} isDealerOver={isDealerOver} />
                     </div>
                 </div>
             </header>
@@ -446,7 +484,7 @@ export default function MainDashboardClient({
             {/* Announcement Modal Overlay */}
             <AnnouncementModal
                 open={showAnnouncement}
-                onOpenChange={setShowAnnouncement}
+                onOpenChange={handleAnnouncementOpenChange}
                 announcements={announcementsList}
                 mode="popup"
                 onAcknowledge={handleAcknowledge}
