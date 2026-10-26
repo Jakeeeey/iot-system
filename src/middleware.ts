@@ -88,14 +88,10 @@ async function getDynamicProtectedPrefixes() {
 
         return CACHED_PREFIXES
     } catch (error) {
-        console.error("[Middleware] Registry Fetch Failed:", error)
+        console.warn("[Middleware] Registry Fetch Failed (Directus unreachable), falling back to baseline prefixes.")
 
-        // Fail-Fast: If we have no cache at all (beyond baseline), we redirect to error
-        if (CACHED_PREFIXES.length <= BASELINE_PREFIXES.length) {
-            throw error
-        }
-
-        // Otherwise, use stale cache (Graceful Degradation)
+        // Graceful Degradation: Fallback to baseline/cached prefixes without crashing
+        LAST_FETCH_TIME = now
         return CACHED_PREFIXES
     }
 }

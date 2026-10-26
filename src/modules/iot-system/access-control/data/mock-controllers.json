@@ -1,0 +1,526 @@
+[
+  {
+    "serialNumber": 423142085,
+    "name": "Controller-423142085",
+    "location": "Main Facility",
+    "ip": "169.254.232.123",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:C5",
+    "mask": "255.255.0.0",
+    "gateway": "0.0.0.0",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": false,
+    "isOnline": false,
+    "status": "OFFLINE",
+    "socketStatus": "DISCONNECTED",
+    "lastSeen": "2026-10-21T04:35:32.222Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 1,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "1",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "2",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "3",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      }
+    }
+  },
+  {
+    "serialNumber": 423141087,
+    "name": "Main Controller (m002)",
+    "location": "Facility - Zone 2",
+    "ip": "192.168.0.100",
+    "port": 60000,
+    "mac": "00:66:19:38:9E:DF",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.327Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "1087 R1",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "COO Office",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "15840"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "1087 R3",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "1087 R4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      }
+    }
+  },
+  {
+    "serialNumber": 423142075,
+    "name": "Controller m003",
+    "location": "Facility - Zone 3",
+    "ip": "192.168.0.126",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:BB",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.327Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "Training Room #1 / 4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "19284"
+        ]
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "CSD / 3",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "60548"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "Training Room #2 / 5",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "74610"
+        ]
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "2075 R4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      }
+    }
+  },
+  {
+    "serialNumber": 423142077,
+    "name": "Controller m004",
+    "location": "Facility - Zone 4",
+    "ip": "192.168.0.123",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:BD",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.327Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "Canton",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "64927"
+        ]
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "Bihon",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "30582"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "2077 D3",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "2077 D4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      }
+    }
+  },
+  {
+    "serialNumber": 423142080,
+    "name": "Controller m005",
+    "location": "Facility - Zone 5",
+    "ip": "192.168.0.173",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:C0",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.389Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "CCTV Room",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "Vertex ( PM & Tech Supp ) / 19",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "36471"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "Vertex ( Developers ) / 20",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "80592"
+        ]
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "Audit / Accounting",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "59284",
+          "81617"
+        ]
+      }
+    }
+  },
+  {
+    "serialNumber": 423142083,
+    "name": "Controller-423142083",
+    "location": "Main Facility",
+    "ip": "192.168.0.144",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:C3",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2015-12-15",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.450Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "Treasury & Finance",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "Vertex Admin Office",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "RsM Office",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "2083 R4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      }
+    }
+  },
+  {
+    "serialNumber": 423142081,
+    "name": "Controller m006",
+    "location": "Facility - Zone 6",
+    "ip": "192.168.0.124",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:C1",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.745Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "Executive Office / 26",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "IoT Dev Office",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "42691"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "Digital Marketing office / 28",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "Hanvin's Office / 29",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "60548"
+        ]
+      }
+    }
+  },
+  {
+    "serialNumber": 423142082,
+    "name": "Controller m007",
+    "location": "Facility - Zone 7",
+    "ip": "192.168.0.164",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:C2",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.808Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "Portal 1",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "Main Entrance",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "main Entrance 2",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "2082 R4",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": []
+      }
+    }
+  },
+  {
+    "serialNumber": 423142084,
+    "name": "Controller m008",
+    "location": "Facility - Zone 8",
+    "ip": "192.168.0.125",
+    "port": 60000,
+    "mac": "00:66:19:38:A2:C4",
+    "mask": "255.255.252.0",
+    "gateway": "192.168.0.1",
+    "version": "v6.98",
+    "releaseDate": "2025-01-01",
+    "online": true,
+    "isOnline": true,
+    "status": "ONLINE",
+    "socketStatus": "CONNECTED",
+    "lastSeen": "2026-10-26T07:51:39.927Z",
+    "timeDriftSeconds": 0,
+    "errorCount": 0,
+    "doors": {
+      "1": {
+        "doorNumber": 1,
+        "name": "Sales Dept (Div Head) / 8",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "open",
+        "passcodes": [
+          "90274"
+        ]
+      },
+      "2": {
+        "doorNumber": 2,
+        "name": "Hall Way",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "81617"
+        ]
+      },
+      "3": {
+        "doorNumber": 3,
+        "name": "Principal Marketting",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "90274"
+        ]
+      },
+      "4": {
+        "doorNumber": 4,
+        "name": "HR",
+        "mode": "controlled",
+        "delaySeconds": 3,
+        "status": "closed",
+        "passcodes": [
+          "71903"
+        ]
+      }
+    }
+  }
+]
