@@ -28,8 +28,21 @@ import {
   X,
   Mail,
   LogOut,
+  SlidersHorizontal,
+  TrendingUp,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const DSM_NAV_TABS = [
+  { label: 'Energy Flow & Fleet', href: '/iot-system/dsm', icon: Zap, exact: true },
+  { label: 'Accounts & Plants', href: '/iot-system/dsm/accounts', icon: Building2 },
+  { label: 'Hardware Telemetry', href: '/iot-system/dsm/hardware-telemetry', icon: SlidersHorizontal },
+  { label: 'Yield & Arbitrage', href: '/iot-system/dsm/yield-arbitrage', icon: TrendingUp },
+  { label: 'Trigonometric Analytics', href: '/iot-system/dsm/trigonometric-analytics', icon: Activity },
+  { label: 'API & Diagnostics', href: '/iot-system/dsm/api-diagnostics', icon: ShieldCheck },
+];
 import { useAccount } from '@/lib/account-context';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useRole } from '@/lib/role-context';
@@ -70,6 +83,7 @@ export function Header({
   } = useAccount();
   const { toggleSidebar } = useSidebar();
   const { role, isAdmin, isConsumer, isViewer, user, showAuthModal, setShowAuthModal, login, logout } = useRole();
+  const pathname = usePathname();
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -579,6 +593,28 @@ export function Header({
             )}
           </div>
         </div>
+      </div>
+
+      {/* DSM Subtab Navigation Bar */}
+      <div className="flex items-center gap-1.5 overflow-x-auto px-4 py-1.5 border-b border-border/60 text-xs scrollbar-none bg-background/50">
+        {DSM_NAV_TABS.map((tab) => {
+          const isActive = tab.exact ? pathname === tab.href : pathname?.startsWith(tab.href);
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all select-none ${
+                isActive
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              <Icon size={14} className="shrink-0" />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Administrator Login Modal */}

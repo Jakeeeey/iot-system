@@ -106,16 +106,27 @@ export async function AppSidebar(props: ComponentProps<typeof Sidebar>) {
     const items = await getSidebarNavigation("iot-system");
 
     // 2. Ensure DSM module is present as its own collapsible menu with subtabs
-    const hasDsm = items.some(
-        (item) => item.slug === "dsm" || item.url.startsWith("/iot-system/dsm")
-    );
+    let hasDsm = false;
+    let hasAccess = false;
 
-    // 3. Ensure Access Control module is present as its own collapsible menu with subtabs
-    const hasAccess = items.some(
-        (item) => item.slug === "access-control" || item.url.startsWith("/iot-system/access-control")
-    );
+    let mergedItems: NavItem[] = items.map((item) => {
+        if (item.slug === "dsm" || item.url.startsWith("/iot-system/dsm")) {
+            hasDsm = true;
+            return {
+                ...item,
+                items: item.items && item.items.length > 0 ? item.items : DSM_NAVIGATION_ITEM.items,
+            };
+        }
+        if (item.slug === "access-control" || item.url.startsWith("/iot-system/access-control")) {
+            hasAccess = true;
+            return {
+                ...item,
+                items: item.items && item.items.length > 0 ? item.items : ACCESS_CONTROL_NAVIGATION_ITEM.items,
+            };
+        }
+        return item;
+    });
 
-    let mergedItems: NavItem[] = items;
     if (!hasDsm) {
         mergedItems = [...mergedItems, DSM_NAVIGATION_ITEM];
     }

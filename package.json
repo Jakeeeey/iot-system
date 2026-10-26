@@ -10,7 +10,9 @@
     "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:access": "npx tsx --test src/modules/iot-system/access-control/__tests__/*.test.ts"
+    "test": "npx tsx --test src/modules/iot-system/**/__tests__/*.test.ts",
+    "test:access": "npx tsx --test src/modules/iot-system/access-control/__tests__/*.test.ts",
+    "test:dsm": "npx tsx --test src/modules/iot-system/dsm/__tests__/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

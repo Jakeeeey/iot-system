@@ -15,9 +15,23 @@ const ROUTES = [
     { path: "/iot-system/access-control/emergency", title: "Emergency Overrides" },
 ];
 
+async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url);
+            if (res.status === 200 || i === retries - 1) return res;
+            await new Promise((r) => setTimeout(r, 500));
+        } catch (e) {
+            if (i === retries - 1) throw e;
+            await new Promise((r) => setTimeout(r, 500));
+        }
+    }
+    return fetch(url);
+}
+
 for (const route of ROUTES) {
-    test(`Route ${route.path} (${route.title}) returns 200 OK without errors`, async () => {
-        const res = await fetch(`${BASE_URL}${route.path}`);
+    test(`Route ${route.path} (${route.title}) returns 200 OK without errors`, { concurrency: 1 }, async () => {
+        const res = await fetchWithRetry(`${BASE_URL}${route.path}`);
         assert.equal(res.status, 200, `Expected 200 OK for ${route.path}, got ${res.status}`);
         const html = await res.text();
         assert.ok(html.includes("<!DOCTYPE html>"), `Route ${route.path} should return valid HTML`);
@@ -25,7 +39,7 @@ for (const route of ROUTES) {
     });
 }
 
-test("Direct static assets for 1:1 original console return 200 OK", async () => {
+test("Direct static assets for 1:1 original console return 200 OK", { concurrency: 1 }, async () => {
     const assets = [
         "/iot-system/access-control/index.html",
         "/iot-system/access-control/styles.css",
@@ -41,7 +55,7 @@ test("Direct static assets for 1:1 original console return 200 OK", async () => 
     ];
 
     for (const asset of assets) {
-        const res = await fetch(`${BASE_URL}${asset}`);
+        const res = await fetchWithRetry(`${BASE_URL}${asset}`);
         assert.equal(res.status, 200, `Asset ${asset} expected 200 OK, got ${res.status}`);
     }
 });
