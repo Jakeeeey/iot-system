@@ -1,5 +1,5 @@
-import { DoorsView } from "@/modules/iot-system/access-control";
+import { CommandCenterView } from "@/modules/iot-system/access-control";
 
 export default function AccessControlRootPage() {
-    return <DoorsView />;
+    return <CommandCenterView />;
 }

@@ -2,6 +2,7 @@ export * from "./types/access.types";
 export * from "./services/access-service";
 export * from "./context/access-context";
 export * from "./components/access-header";
+export * from "./components/command-center-view";
 export * from "./components/doors-view";
 export * from "./components/controllers-view";
 export * from "./components/users-view";

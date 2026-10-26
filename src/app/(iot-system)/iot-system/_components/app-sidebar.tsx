@@ -52,10 +52,16 @@ const DSM_NAVIGATION_ITEM: NavItem = {
 
 const ACCESS_CONTROL_NAVIGATION_ITEM: NavItem = {
     title: "Access Control",
-    url: "/iot-system/access-control/doors",
+    url: "/iot-system/access-control",
     slug: "access-control",
     iconName: "Shield",
     items: [
+        {
+            title: "Command Center",
+            url: "/iot-system/access-control",
+            slug: "access-command-center",
+            iconName: "LayoutDashboard",
+        },
         {
             title: "Doors & Live Monitor",
             url: "/iot-system/access-control/doors",
