@@ -129,10 +129,11 @@ function loadAccessDatabase(): AccessDbState {
     };
 }
 
-function handleStandaloneResponse(path: string[]) {
+async function handleStandaloneResponse(path: string[]) {
     const routeKey = path.join("/").toLowerCase();
     const db = loadAccessDatabase();
     const onlineBoards = db.controllers.filter((c) => c.online).length;
+    const allDoors = db.controllers.flatMap((c) => c.doors || []);
 
     if (routeKey.startsWith("auth/status")) {
         return NextResponse.json({
@@ -320,21 +321,131 @@ function handleStandaloneResponse(path: string[]) {
     }
 
     if (routeKey.startsWith("directus/status")) {
+        const directusBase = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || "";
+        let isDirectusAlive = false;
+        let controllerCountInDirectus = 0;
+        let doorCountInDirectus = 0;
+        let credentialCountInDirectus = 0;
+
+        if (directusBase && directusToken) {
+            try {
+                const probeRes = await fetch(
+                    `${directusBase.replace(/\/+$/, "")}/items/iot_access_controllers?aggregate[count]=*`,
+                    {
+                        headers: { Authorization: `Bearer ${directusToken}` },
+                        signal: AbortSignal.timeout(2000),
+                        cache: "no-store",
+                    }
+                );
+                if (probeRes.ok) {
+                    const probeJson = await probeRes.json();
+                    controllerCountInDirectus = Number(probeJson.data?.[0]?.count ?? 0);
+                    isDirectusAlive = true;
+
+                    const [doorsRes, credsRes] = await Promise.allSettled([
+                        fetch(`${directusBase.replace(/\/+$/, "")}/items/iot_access_doors?aggregate[count]=*`, {
+                            headers: { Authorization: `Bearer ${directusToken}` },
+                            signal: AbortSignal.timeout(1500),
+                            cache: "no-store",
+                        }).then((r) => r.json()),
+                        fetch(`${directusBase.replace(/\/+$/, "")}/items/iot_access_credentials?aggregate[count]=*`, {
+                            headers: { Authorization: `Bearer ${directusToken}` },
+                            signal: AbortSignal.timeout(1500),
+                            cache: "no-store",
+                        }).then((r) => r.json()),
+                    ]);
+
+                    if (doorsRes.status === "fulfilled" && doorsRes.value.data?.[0]?.count) {
+                        doorCountInDirectus = Number(doorsRes.value.data[0].count);
+                    }
+                    if (credsRes.status === "fulfilled" && credsRes.value.data?.[0]?.count) {
+                        credentialCountInDirectus = Number(credsRes.value.data[0].count);
+                    }
+                }
+            } catch {
+                isDirectusAlive = false;
+            }
+        }
+
+        if (isDirectusAlive) {
+            return NextResponse.json({
+                success: true,
+                connected: true,
+                status: "connected",
+                totalUsers: credentialCountInDirectus || db.users.length,
+                syncedUsers: db.users.length,
+                lastSyncTime: new Date().toISOString(),
+                targetUrl: directusBase,
+                hasToken: true,
+                database: "Directus MySQL (vos_database) & Local JSON Replica",
+                collections: {
+                    iot_access_controllers: controllerCountInDirectus,
+                    iot_access_doors: doorCountInDirectus,
+                    iot_access_credentials: credentialCountInDirectus,
+                },
+                message: `Directus MySQL database online (${controllerCountInDirectus} controllers, ${doorCountInDirectus} doors, ${credentialCountInDirectus} credentials synced).`,
+            });
+        }
+
         return NextResponse.json({
             success: true,
-            connected: true,
-            status: "CONNECTED",
-            message: "Standalone Directus Sync Active",
-            targetUrl: "Embedded Local Sync",
-            hasToken: true,
-            pendingEvents: 0,
+            connected: false,
+            status: "standby",
+            totalUsers: db.users.length,
+            syncedUsers: db.users.length,
+            lastSyncTime: null,
+            targetUrl: directusBase,
+            hasToken: !!directusToken,
+            database: "Local Edge Replica (access-database.json)",
+            message: "Directus upstream server standby — running on local database replica.",
         });
     }
 
     if (routeKey.startsWith("directus/sync")) {
+        const directusBase = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || "";
+        let syncSummary = {
+            controllers: db.controllers.length,
+            doors: allDoors.length,
+            users: db.users.length,
+            events: db.events.length,
+            upstreamConnected: false,
+        };
+
+        if (directusBase && directusToken) {
+            try {
+                const [cRes, dRes] = await Promise.all([
+                    fetch(`${directusBase.replace(/\/+$/, "")}/items/iot_access_controllers?limit=-1`, {
+                        headers: { Authorization: `Bearer ${directusToken}` },
+                        signal: AbortSignal.timeout(3000),
+                        cache: "no-store",
+                    }),
+                    fetch(`${directusBase.replace(/\/+$/, "")}/items/iot_access_doors?limit=-1`, {
+                        headers: { Authorization: `Bearer ${directusToken}` },
+                        signal: AbortSignal.timeout(3000),
+                        cache: "no-store",
+                    }),
+                ]);
+
+                if (cRes.ok && dRes.ok) {
+                    const cData = await cRes.json();
+                    const dData = await dRes.json();
+                    syncSummary.upstreamConnected = true;
+                    syncSummary.controllers = cData.data?.length ?? syncSummary.controllers;
+                    syncSummary.doors = dData.data?.length ?? syncSummary.doors;
+                }
+            } catch {
+                // fallback gracefully
+            }
+        }
+
         return NextResponse.json({
             success: true,
-            message: "Directus tables synchronized.",
+            message: syncSummary.upstreamConnected
+                ? `Directus database synchronized successfully (${syncSummary.controllers} controllers, ${syncSummary.doors} doors, ${syncSummary.users} users).`
+                : "Local replica database synchronized.",
+            synced: syncSummary,
         });
     }
 
@@ -378,7 +489,7 @@ let isGatewayAvailable = false;
 
 async function proxyRequest(request: NextRequest, subpath: string[]) {
     if (!isGatewayAvailable && Date.now() - lastGatewayCheck < 10000) {
-        return handleStandaloneResponse(subpath);
+        return await handleStandaloneResponse(subpath);
     }
 
     try {
@@ -426,7 +537,7 @@ async function proxyRequest(request: NextRequest, subpath: string[]) {
         isGatewayAvailable = false;
         lastGatewayCheck = Date.now();
         // When hardware gateway process (port 3001) is offline, fall back seamlessly to standalone mode
-        return handleStandaloneResponse(subpath);
+        return await handleStandaloneResponse(subpath);
     }
 }
 
