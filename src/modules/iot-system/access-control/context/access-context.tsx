@@ -267,24 +267,21 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
         };
     }, [historyLogs, recentEvents]);
 
-    // 24-Hour Velocity curve
+    // 24-Hour Velocity curve (merged server full-day baseline + real-time in-memory events)
     const hourlyVelocity: HourlyVelocityMetric[] = useMemo(() => {
-        if (serverHourly && serverHourly.length === 24) {
-            return serverHourly;
-        }
-
         const buckets: HourlyVelocityMetric[] = Array.from({ length: 24 }, (_, i) => ({
             hour: i,
             label: `${String(i).padStart(2, "0")}:00`,
-            granted: 0,
-            denied: 0,
-            total: 0,
+            granted: (serverHourly && serverHourly[i]) ? serverHourly[i].granted : 0,
+            denied: (serverHourly && serverHourly[i]) ? serverHourly[i].denied : 0,
+            total: (serverHourly && serverHourly[i]) ? serverHourly[i].total : 0,
         }));
 
         const now = new Date();
         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
         const logs = historyLogs.length > 0 ? historyLogs : recentEvents;
+        const liveBuckets = Array.from({ length: 24 }, () => ({ granted: 0, denied: 0, total: 0 }));
         for (const log of logs) {
             try {
                 const raw = String(log.timestamp || "").trim();
@@ -299,15 +296,22 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
                 const hour = d.getHours();
                 if (hour >= 0 && hour < 24) {
                     if (log.granted) {
-                        buckets[hour].granted += 1;
+                        liveBuckets[hour].granted += 1;
                     } else {
-                        buckets[hour].denied += 1;
+                        liveBuckets[hour].denied += 1;
                     }
-                    buckets[hour].total += 1;
+                    liveBuckets[hour].total += 1;
                 }
             } catch {
                 // ignore invalid dates
             }
+        }
+
+        // Merge: for each hour, take the maximum between the server full-day baseline and live local counts
+        for (let i = 0; i < 24; i++) {
+            buckets[i].granted = Math.max(buckets[i].granted, liveBuckets[i].granted);
+            buckets[i].denied = Math.max(buckets[i].denied, liveBuckets[i].denied);
+            buckets[i].total = buckets[i].granted + buckets[i].denied;
         }
 
         return buckets;
