@@ -262,11 +262,22 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
             total: 0,
         }));
 
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
         const logs = historyLogs.length > 0 ? historyLogs : recentEvents;
         for (const log of logs) {
             try {
-                const date = new Date(log.timestamp);
-                const hour = date.getHours();
+                const raw = String(log.timestamp || "").trim();
+                const d = /[zZ]$|[+-]\d\d:\d\d$/.test(raw)
+                    ? new Date(raw)
+                    : new Date(raw.replace(" ", "T"));
+                if (isNaN(d.getTime())) continue;
+
+                const logDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                if (logDate !== todayStr) continue;
+
+                const hour = d.getHours();
                 if (hour >= 0 && hour < 24) {
                     if (log.granted) {
                         buckets[hour].granted += 1;

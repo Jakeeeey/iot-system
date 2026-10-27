@@ -143,11 +143,39 @@ function loadAccessDatabase(): AccessDbState {
     };
 }
 
-async function handleStandaloneResponse(path: string[]) {
+function parseEventTimestamp(ts: string | Date | undefined): Date | null {
+    if (!ts) return null;
+    if (ts instanceof Date) return isNaN(ts.getTime()) ? null : ts;
+    const raw = String(ts).trim();
+    if (!raw) return null;
+    if (/[zZ]$|[+-]\d\d:\d\d$/.test(raw)) {
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? null : d;
+    }
+    const d = new Date(raw.replace(' ', 'T'));
+    if (!isNaN(d.getTime())) return d;
+    const fallback = new Date(raw);
+    return isNaN(fallback.getTime()) ? null : fallback;
+}
+
+function getEventLocalDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+async function handleStandaloneResponse(path: string[], request?: NextRequest) {
     const routeKey = path.join("/").toLowerCase();
     const db = loadAccessDatabase();
     const onlineBoards = db.controllers.filter((c) => c.online).length;
     const allDoors = db.controllers.flatMap((c) => c.doors || []);
+    const searchParams = request?.nextUrl.searchParams;
+    const dateParam = searchParams?.get("date") || "";
+    const serialParam = searchParams?.get("serial") || "";
+    const typeParam = searchParams?.get("type") || "";
+    const searchStr = (searchParams?.get("search") || "").toLowerCase();
+    const limit = Number(searchParams?.get("limit")) || 500;
 
     if (routeKey.startsWith("auth/status")) {
         return NextResponse.json({
@@ -252,6 +280,12 @@ async function handleStandaloneResponse(path: string[]) {
     }
 
     if (routeKey.startsWith("history/hourly")) {
+        const now = new Date();
+        const targetDate = /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+            ? dateParam
+            : getEventLocalDateStr(now);
+        const targetSerial = serialParam ? Number(serialParam) : null;
+
         const hourlyData = Array.from({ length: 24 }, (_, i) => ({
             hour: i,
             granted: 0,
@@ -261,10 +295,16 @@ async function handleStandaloneResponse(path: string[]) {
 
         for (const ev of db.events) {
             try {
-                const d = new Date(ev.timestamp);
+                if (targetSerial && Number(ev.serialNumber) !== targetSerial) continue;
+
+                const d = parseEventTimestamp(ev.timestamp);
+                if (!d) continue;
+
+                if (getEventLocalDateStr(d) !== targetDate) continue;
+
                 const h = d.getHours();
                 if (h >= 0 && h < 24) {
-                    if (ev.granted) hourlyData[h].granted++;
+                    if (ev.granted === true || ev.granted === 1) hourlyData[h].granted++;
                     else hourlyData[h].denied++;
                     hourlyData[h].total++;
                 }
@@ -276,9 +316,11 @@ async function handleStandaloneResponse(path: string[]) {
         const totalHourly = hourlyData.reduce((acc, h) => acc + h.total, 0);
         return NextResponse.json({
             success: true,
+            date: targetDate,
             hours: hourlyData,
-            data: { hours: hourlyData },
+            data: { hours: hourlyData, date: targetDate, total: totalHourly },
             total: totalHourly,
+            source: "local",
         });
     }
 
@@ -305,12 +347,31 @@ async function handleStandaloneResponse(path: string[]) {
             });
         }
 
+        let filtered = db.events;
+
+        if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+            filtered = filtered.filter((ev) => {
+                const d = parseEventTimestamp(ev.timestamp);
+                return d && getEventLocalDateStr(d) === dateParam;
+            });
+        }
+
+        if (typeParam) {
+            filtered = filtered.filter((ev) => ev.type === typeParam);
+        }
+
+        if (searchStr) {
+            filtered = filtered.filter((ev) => JSON.stringify(ev).toLowerCase().includes(searchStr));
+        }
+
+        const slice = filtered.slice(0, limit);
+
         return NextResponse.json({
             success: true,
-            events: db.events,
-            logs: db.events,
-            data: db.events,
-            total: db.events.length,
+            events: slice,
+            logs: slice,
+            data: slice,
+            total: filtered.length,
             source: "local",
         });
     }
@@ -528,7 +589,7 @@ let isGatewayAvailable = false;
 
 async function proxyRequest(request: NextRequest, subpath: string[]) {
     if (!isGatewayAvailable && Date.now() - lastGatewayCheck < 10000) {
-        return await handleStandaloneResponse(subpath);
+        return await handleStandaloneResponse(subpath, request);
     }
 
     try {
@@ -576,7 +637,7 @@ async function proxyRequest(request: NextRequest, subpath: string[]) {
         isGatewayAvailable = false;
         lastGatewayCheck = Date.now();
         // When hardware gateway process (port 3001) is offline, fall back seamlessly to standalone mode
-        return await handleStandaloneResponse(subpath);
+        return await handleStandaloneResponse(subpath, request);
     }
 }
 

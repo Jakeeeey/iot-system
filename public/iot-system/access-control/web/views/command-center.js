@@ -22,9 +22,12 @@ function ccParseDate(ts) {
     if (typeof ts === 'string') {
         const raw = ts.trim();
         if (!raw) return null;
-        const hasTz = /[zZ]$|[+-]\d\d:\d\d$/.test(raw);
-        const iso = hasTz ? raw : `${raw.replace(' ', 'T')}Z`;
-        const d = new Date(iso);
+        if (/[zZ]$|[+-]\d\d:\d\d$/.test(raw)) {
+            const d = new Date(raw);
+            if (!isNaN(d.getTime())) return d;
+        }
+        const isoLocal = raw.replace(' ', 'T');
+        const d = new Date(isoLocal);
         if (!isNaN(d.getTime())) return d;
         const fallback = new Date(raw);
         if (!isNaN(fallback.getTime())) return fallback;
