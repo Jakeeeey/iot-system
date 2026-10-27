@@ -100,25 +100,36 @@ function loadAccessDatabase(): AccessDbState {
                     };
                 });
 
-                const events = (raw.auditLogs || []).map((ev: any) => ({
-                    ...ev,
-                    id: ev.id,
-                    timestamp: ev.timestamp || new Date().toISOString(),
-                    serialNumber: ev.serialNumber,
-                    controllerName: ev.controllerName || (ev.serialNumber ? `Controller ${ev.serialNumber}` : "Gateway"),
-                    doorNumber: ev.doorNumber,
-                    doorName: ev.doorName || (ev.doorNumber ? `Door ${ev.doorNumber}` : "General Door"),
-                    cardNumber: ev.cardNumber,
-                    rawCardNumber: ev.rawCardNumber || String(ev.cardNumber || ""),
-                    userName: ev.userName,
-                    cardHolderName: ev.userName || ev.cardHolderName,
-                    granted: ev.granted === true || ev.granted === 1,
-                    type: ev.type || (ev.granted ? "SWIPE_GRANTED" : "SWIPE_DENIED"),
-                    direction: ev.direction || "in",
-                    reason: ev.reason || (ev.granted ? 1 : 2),
-                    unknownCard: ev.unknownCard === true,
-                    message: ev.message || (ev.granted ? "Access Granted" : "Access Denied"),
-                }));
+                const seenKeys = new Set<string>();
+                const events: any[] = [];
+                for (const ev of raw.auditLogs || []) {
+                    const d = parseEventTimestamp(ev.timestamp);
+                    const timeMs = d ? Math.floor(d.getTime() / 1000) * 1000 : null;
+                    const key = timeMs !== null
+                        ? `${ev.serialNumber}_${timeMs}_${ev.doorNumber || 1}_${ev.cardNumber || ""}`
+                        : String(ev.id || Math.random());
+                    if (seenKeys.has(key)) continue;
+                    seenKeys.add(key);
+                    events.push({
+                        ...ev,
+                        id: ev.id,
+                        timestamp: ev.timestamp || new Date().toISOString(),
+                        serialNumber: ev.serialNumber,
+                        controllerName: ev.controllerName || (ev.serialNumber ? `Controller ${ev.serialNumber}` : "Gateway"),
+                        doorNumber: ev.doorNumber,
+                        doorName: ev.doorName || (ev.doorNumber ? `Door ${ev.doorNumber}` : "General Door"),
+                        cardNumber: ev.cardNumber,
+                        rawCardNumber: ev.rawCardNumber || String(ev.cardNumber || ""),
+                        userName: ev.userName,
+                        cardHolderName: ev.userName || ev.cardHolderName,
+                        granted: ev.granted === true || ev.granted === 1,
+                        type: ev.type || (ev.granted ? "SWIPE_GRANTED" : "SWIPE_DENIED"),
+                        direction: ev.direction || "in",
+                        reason: ev.reason || (ev.granted ? 1 : 2),
+                        unknownCard: ev.unknownCard === true,
+                        message: ev.message || (ev.granted ? "Access Granted" : "Access Denied"),
+                    });
+                }
 
                 cachedDbData = {
                     controllers,
@@ -286,6 +297,72 @@ async function handleStandaloneResponse(path: string[], request?: NextRequest) {
             : getEventLocalDateStr(now);
         const targetSerial = serialParam ? Number(serialParam) : null;
 
+        const directusBase = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || "";
+
+        if (directusBase && directusToken) {
+            try {
+                const dm = targetDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (dm) {
+                    const dayStart = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), 0, 0, 0, 0);
+                    const dayEnd = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), 23, 59, 59, 999);
+                    const utcStart = dayStart.toISOString().slice(0, 19);
+                    const utcEnd = dayEnd.toISOString().slice(0, 19);
+
+                    const types = "SWIPE_GRANTED,SWIPE_DENIED,SWIPE_EVENT,REMOTE_OPEN";
+                    let dUrl = `${directusBase.replace(/\/+$/, "")}/items/iot_access_events?filter[timestamp][_between]=${encodeURIComponent(utcStart + "," + utcEnd)}`
+                        + `&filter[_or][0][type][_in]=${encodeURIComponent(types)}`
+                        + `&filter[_or][1][reason_text][_in]=${encodeURIComponent(types)}`
+                        + `&limit=5000&fields=timestamp,granted,type,reason_text,controller_sn`;
+                    if (targetSerial !== null) {
+                        dUrl += `&filter[controller_sn][_eq]=${encodeURIComponent(String(targetSerial))}`;
+                    }
+
+                    const dRes = await fetch(dUrl, {
+                        headers: { Authorization: `Bearer ${directusToken}` },
+                        signal: AbortSignal.timeout(3000),
+                        cache: "no-store",
+                    });
+
+                    if (dRes.ok) {
+                        const dJson = await dRes.json();
+                        if (Array.isArray(dJson.data) && dJson.data.length > 0) {
+                            const hours = Array.from({ length: 24 }, (_, i) => ({
+                                hour: i,
+                                granted: 0,
+                                denied: 0,
+                                total: 0,
+                            }));
+                            let total = 0;
+                            for (const r of dJson.data) {
+                                const rawTs = String(r.timestamp || "");
+                                const hasZ = /[zZ]$|[+-]\d\d:\d\d$/.test(rawTs);
+                                const t = new Date(hasZ ? rawTs : `${rawTs.replace(" ", "T")}Z`).getTime();
+                                if (!Number.isFinite(t)) continue;
+                                const hr = new Date(t).getHours();
+                                if (hr < 0 || hr > 23) continue;
+                                const granted = r.granted === 1 || r.granted === true || r.type === "SWIPE_GRANTED" || r.reason_text === "SWIPE_GRANTED";
+                                if (granted) hours[hr].granted++;
+                                else hours[hr].denied++;
+                                hours[hr].total++;
+                                total++;
+                            }
+                            return NextResponse.json({
+                                success: true,
+                                date: targetDate,
+                                hours,
+                                data: { hours, date: targetDate, total },
+                                total,
+                                source: "directus",
+                            });
+                        }
+                    }
+                }
+            } catch {
+                // fallback to local replica
+            }
+        }
+
         const hourlyData = Array.from({ length: 24 }, (_, i) => ({
             hour: i,
             granted: 0,
@@ -345,6 +422,78 @@ async function handleStandaloneResponse(path: string[], request?: NextRequest) {
                     "Connection": "keep-alive",
                 },
             });
+        }
+
+        const directusBase = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || "";
+
+        if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) && directusBase && directusToken) {
+            try {
+                const dm = dateParam.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (dm) {
+                    const dayStart = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), 0, 0, 0, 0);
+                    const dayEnd = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), 23, 59, 59, 999);
+                    const utcStart = dayStart.toISOString().slice(0, 19);
+                    const utcEnd = dayEnd.toISOString().slice(0, 19);
+
+                    let dUrl = `${directusBase.replace(/\/+$/, "")}/items/iot_access_events?filter[timestamp][_between]=${encodeURIComponent(utcStart + "," + utcEnd)}&sort=-timestamp&limit=${limit}`;
+                    if (typeParam) {
+                        dUrl += `&filter[_or][0][type][_eq]=${encodeURIComponent(typeParam)}&filter[_or][1][reason_text][_eq]=${encodeURIComponent(typeParam)}`;
+                    }
+
+                    const dRes = await fetch(dUrl, {
+                        headers: { Authorization: `Bearer ${directusToken}` },
+                        signal: AbortSignal.timeout(3000),
+                        cache: "no-store",
+                    });
+
+                    if (dRes.ok) {
+                        const dJson = await dRes.json();
+                        if (Array.isArray(dJson.data) && dJson.data.length > 0) {
+                            const knownTypes = ["SWIPE_GRANTED", "SWIPE_DENIED", "SWIPE_EVENT", "REMOTE_OPEN", "SECURITY", "DOOR_SENSOR", "DISCOVERY", "SCAN_STARTED", "SCAN_COMPLETED"];
+                            const directusLogs = dJson.data.map((r: any) => {
+                                const rawTs = String(r.timestamp || "");
+                                const hasZ = /[zZ]$|[+-]\d\d:\d\d$/.test(rawTs);
+                                const isoTimestamp = hasZ ? rawTs : `${rawTs.replace(" ", "T")}Z`;
+                                const eventType = (r.type && knownTypes.includes(r.type))
+                                    ? r.type
+                                    : (knownTypes.includes(r.reason_text)
+                                        ? r.reason_text
+                                        : (r.granted === 1 || r.granted === true ? "SWIPE_GRANTED" : "SWIPE_DENIED"));
+                                return {
+                                    id: `dir-${r.id}`,
+                                    timestamp: isoTimestamp,
+                                    type: eventType,
+                                    serialNumber: r.controller_sn,
+                                    controllerName: r.controller_name || (r.controller_sn ? `Controller ${r.controller_sn}` : "Gateway"),
+                                    doorNumber: r.door_number || 1,
+                                    doorName: r.door_name || (r.door_number ? `Door ${r.door_number}` : "General Door"),
+                                    cardNumber: r.card_number,
+                                    rawCardNumber: String(r.card_number || ""),
+                                    userName: r.cardholder_name || (r.card_number ? `Cardholder #${r.card_number}` : "Unknown"),
+                                    cardholderId: r.cardholder_id,
+                                    granted: r.granted === 1 || r.granted === true,
+                                    reason: r.reason_code,
+                                    message: `${eventType}: ${r.door_name || "Door " + (r.door_number || 1)} [Card #${r.card_number || "---"}]`,
+                                };
+                            });
+                            let filtered = directusLogs;
+                            if (searchStr) filtered = filtered.filter((l: any) => JSON.stringify(l).toLowerCase().includes(searchStr));
+                            const slice = filtered.slice(0, limit);
+                            return NextResponse.json({
+                                success: true,
+                                logs: slice,
+                                events: slice,
+                                data: slice,
+                                total: filtered.length,
+                                source: "directus",
+                            });
+                        }
+                    }
+                }
+            } catch {
+                // fallback to local replica
+            }
         }
 
         let filtered = db.events;
@@ -588,15 +737,49 @@ let lastGatewayCheck = 0;
 let isGatewayAvailable = false;
 
 async function proxyRequest(request: NextRequest, subpath: string[]) {
+    const targetPath = subpath.join("/");
+    const search = request.nextUrl.search;
+    const isStream = subpath.includes("stream") || request.headers.get("accept")?.includes("text/event-stream");
+    const targetUrl = `${GATEWAY_URL.replace(/\/+$/, "")}/api/${targetPath}${search}`;
+
+    if (isStream) {
+        try {
+            const headers = new Headers();
+            request.headers.forEach((value, key) => {
+                if (!["host", "connection", "content-length"].includes(key.toLowerCase())) {
+                    headers.set(key, value);
+                }
+            });
+
+            const gatewayRes = await fetch(targetUrl, {
+                method: request.method,
+                headers,
+            });
+
+            if (gatewayRes.ok && gatewayRes.body) {
+                isGatewayAvailable = true;
+                const responseHeaders = new Headers();
+                gatewayRes.headers.forEach((value, key) => {
+                    if (!["content-encoding", "content-length", "transfer-encoding"].includes(key.toLowerCase())) {
+                        responseHeaders.set(key, value);
+                    }
+                });
+                return new NextResponse(gatewayRes.body as any, {
+                    status: gatewayRes.status,
+                    headers: responseHeaders,
+                });
+            }
+        } catch (err: any) {
+            // Streaming closure or reconnect must not trip the REST circuit breaker
+        }
+        return await handleStandaloneResponse(subpath, request);
+    }
+
     if (!isGatewayAvailable && Date.now() - lastGatewayCheck < 10000) {
         return await handleStandaloneResponse(subpath, request);
     }
 
     try {
-        const targetPath = subpath.join("/");
-        const search = request.nextUrl.search;
-        const targetUrl = `${GATEWAY_URL.replace(/\/+$/, "")}/api/${targetPath}${search}`;
-
         const headers = new Headers();
         request.headers.forEach((value, key) => {
             if (!["host", "connection", "content-length"].includes(key.toLowerCase())) {
@@ -607,7 +790,7 @@ async function proxyRequest(request: NextRequest, subpath: string[]) {
         const init: RequestInit = {
             method: request.method,
             headers,
-            signal: AbortSignal.timeout(1500),
+            signal: AbortSignal.timeout(5000),
         };
 
         if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
@@ -618,9 +801,29 @@ async function proxyRequest(request: NextRequest, subpath: string[]) {
         }
 
         const gatewayRes = await fetch(targetUrl, init);
-        const data = await gatewayRes.text();
+        let data = await gatewayRes.text();
 
         isGatewayAvailable = true;
+
+        // Harmonize logs vs events array across endpoints
+        try {
+            const parsed = JSON.parse(data);
+            if (parsed && typeof parsed === "object") {
+                let modified = false;
+                if (Array.isArray(parsed.logs) && !Array.isArray(parsed.events)) {
+                    parsed.events = parsed.logs;
+                    modified = true;
+                } else if (Array.isArray(parsed.events) && !Array.isArray(parsed.logs)) {
+                    parsed.logs = parsed.events;
+                    modified = true;
+                }
+                if (modified) {
+                    data = JSON.stringify(parsed);
+                }
+            }
+        } catch {
+            // Non-JSON response
+        }
 
         const responseHeaders = new Headers();
         gatewayRes.headers.forEach((value, key) => {
@@ -633,7 +836,7 @@ async function proxyRequest(request: NextRequest, subpath: string[]) {
             status: gatewayRes.status,
             headers: responseHeaders,
         });
-    } catch {
+    } catch (err: any) {
         isGatewayAvailable = false;
         lastGatewayCheck = Date.now();
         // When hardware gateway process (port 3001) is offline, fall back seamlessly to standalone mode

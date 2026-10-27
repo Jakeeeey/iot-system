@@ -97,8 +97,8 @@ const DEFAULT_AUTH: AuthStatusResponse = {
 
 const DEFAULT_DIRECTUS: DirectusSyncStatus = {
     status: "connected",
-    totalUsers: 5,
-    syncedUsers: 5,
+    totalUsers: 0,
+    syncedUsers: 0,
     lastSyncTime: new Date().toISOString(),
 };
 
@@ -107,6 +107,7 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
     const [users, setUsers] = useState<AccessUser[]>([]);
     const [recentEvents, setRecentEvents] = useState<AccessEventLog[]>([]);
     const [historyLogs, setHistoryLogs] = useState<AccessEventLog[]>([]);
+    const [serverHourly, setServerHourly] = useState<HourlyVelocityMetric[] | null>(null);
     const [emergencyState, setEmergencyState] = useState<EmergencyState>("NORMAL");
     const [auth, setAuth] = useState<AuthStatusResponse>(DEFAULT_AUTH);
     const [directusStatus, setDirectusStatus] = useState<DirectusSyncStatus>(DEFAULT_DIRECTUS);
@@ -119,13 +120,17 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
 
     const refreshAll = useCallback(async () => {
         try {
-            const [ctrlRes, userRes, histRes, emergRes, authRes, directusRes] = await Promise.allSettled([
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+            const [ctrlRes, userRes, histRes, emergRes, authRes, directusRes, hourlyRes] = await Promise.allSettled([
                 accessService.getControllers(),
                 accessService.getUsers(),
-                accessService.getHistory(150),
+                accessService.getHistory(500),
                 accessService.getEmergencyStatus(),
                 accessService.getAuthStatus(),
                 accessService.getDirectusStatus(),
+                accessService.getHourlyHistory(todayStr),
             ]);
 
             let reachable = false;
@@ -156,6 +161,16 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
                 setRecentEvents(enriched.slice(0, 50));
                 setHistoryLogs(enriched);
                 reachable = true;
+            }
+
+            if (hourlyRes.status === "fulfilled" && hourlyRes.value.success && Array.isArray(hourlyRes.value.hours) && hourlyRes.value.hours.length === 24) {
+                setServerHourly(hourlyRes.value.hours.map((h, i) => ({
+                    hour: i,
+                    label: `${String(i).padStart(2, "0")}:00`,
+                    granted: Number(h.granted) || 0,
+                    denied: Number(h.denied) || 0,
+                    total: (Number(h.granted) || 0) + (Number(h.denied) || 0),
+                })));
             }
 
             if (emergRes.status === "fulfilled") {
@@ -254,6 +269,10 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
 
     // 24-Hour Velocity curve
     const hourlyVelocity: HourlyVelocityMetric[] = useMemo(() => {
+        if (serverHourly && serverHourly.length === 24) {
+            return serverHourly;
+        }
+
         const buckets: HourlyVelocityMetric[] = Array.from({ length: 24 }, (_, i) => ({
             hour: i,
             label: `${String(i).padStart(2, "0")}:00`,
@@ -291,28 +310,8 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
             }
         }
 
-        // Fill in baseline realistic curves if events are sparse
-        const hasData = buckets.some((b) => b.total > 0);
-        if (!hasData) {
-            const template = [
-                0, 0, 0, 0, 1, 3, 12, 45, 68, 52, 41, 60,
-                55, 48, 62, 70, 64, 40, 25, 14, 8, 4, 1, 0
-            ];
-            return buckets.map((b, idx) => {
-                const simulated = template[idx];
-                const denied = Math.max(0, Math.floor(simulated * 0.08));
-                const granted = simulated - denied;
-                return {
-                    ...b,
-                    granted,
-                    denied,
-                    total: simulated,
-                };
-            });
-        }
-
         return buckets;
-    }, [historyLogs, recentEvents]);
+    }, [serverHourly, historyLogs, recentEvents]);
 
     // Top Door Throughput
     const topDoorsRank: DoorThroughputRank[] = useMemo(() => {
