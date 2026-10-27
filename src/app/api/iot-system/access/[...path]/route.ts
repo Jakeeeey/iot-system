@@ -29,6 +29,7 @@ function loadAccessDatabase(): AccessDbState {
                 const raw = JSON.parse(fs.readFileSync(dbPath, "utf8"));
 
                 const controllers = (raw.controllers || []).map((c: any) => ({
+                    ...c,
                     serialNumber: c.serialNumber,
                     name: c.name,
                     location: c.location || "Main Facility",
@@ -47,10 +48,15 @@ function loadAccessDatabase(): AccessDbState {
                     timeDriftSeconds: 0,
                     errorCount: (c.status === "ONLINE" || c.online === true) ? 0 : 1,
                     doors: (c.doors || []).map((d: any) => ({
-                        doorNumber: d.id || d.doorNumber,
-                        name: d.name || `Door ${d.id || d.doorNumber}`,
-                        mode: (d.mode || "controlled").toLowerCase(),
-                        delaySeconds: d.delay || d.delaySeconds || 3,
+                        ...d,
+                        id: d.id ?? d.doorNumber,
+                        doorNumber: d.id ?? d.doorNumber,
+                        name: d.name || `Door ${d.id ?? d.doorNumber}`,
+                        mode: d.mode || "controlled",
+                        delay: d.delay ?? d.delaySeconds ?? 3,
+                        delaySeconds: d.delay ?? d.delaySeconds ?? 3,
+                        locked: d.locked !== undefined ? d.locked : !d.open,
+                        open: Boolean(d.open),
                         status: d.open ? "open" : "closed",
                         passcodes: (d.passcodes || []).filter((p: any) => Number(p) > 0).map(String),
                     })),
@@ -71,36 +77,44 @@ function loadAccessDatabase(): AccessDbState {
                         }
                     }
                     return {
-                        cardNumber: u.cardNumber,
+                        ...u,
+                        id: u.id || `usr-${u.cardNumber}`,
+                        cardNumber: Number(u.cardNumber),
                         rawCardNumber: u.rawCardNumber || String(u.cardNumber),
                         name: u.name,
-                        department: u.department || "General",
+                        department: u.department || "General Staff",
+                        position: u.position || "",
                         phone: u.phone || "",
                         pin: u.pin ? String(u.pin) : "",
+                        startDate: u.startDate || "2026-01-01",
+                        endDate: u.endDate || "2030-12-31",
                         validFrom: u.startDate || "2026-01-01",
                         validTo: u.endDate || "2030-12-31",
+                        status: u.status || "Active",
+                        syncStatus: u.syncStatus || "SYNCED",
                         doors: [1, 2, 3, 4],
                         boardDoors,
-                        permissions: u.permissions,
+                        permissions: u.permissions || {},
                         synced: u.syncStatus === "SYNCED" || !u.pendingSync,
-                        active: u.status === "Active",
+                        active: u.status === "Active" || u.active === true,
                     };
                 });
 
                 const events = (raw.auditLogs || []).map((ev: any) => ({
+                    ...ev,
                     id: ev.id,
-                    timestamp: ev.timestamp ? new Date(ev.timestamp).toISOString() : new Date().toISOString(),
+                    timestamp: ev.timestamp || new Date().toISOString(),
                     serialNumber: ev.serialNumber,
-                    controllerName: ev.controllerName,
+                    controllerName: ev.controllerName || (ev.serialNumber ? `Controller ${ev.serialNumber}` : "Gateway"),
                     doorNumber: ev.doorNumber,
-                    doorName: ev.doorName,
+                    doorName: ev.doorName || (ev.doorNumber ? `Door ${ev.doorNumber}` : "General Door"),
                     cardNumber: ev.cardNumber,
-                    rawCardNumber: ev.rawCardNumber,
+                    rawCardNumber: ev.rawCardNumber || String(ev.cardNumber || ""),
                     userName: ev.userName,
-                    cardHolderName: ev.userName,
-                    granted: ev.granted === true,
+                    cardHolderName: ev.userName || ev.cardHolderName,
+                    granted: ev.granted === true || ev.granted === 1,
                     type: ev.type || (ev.granted ? "SWIPE_GRANTED" : "SWIPE_DENIED"),
-                    direction: "in",
+                    direction: ev.direction || "in",
                     reason: ev.reason || (ev.granted ? 1 : 2),
                     unknownCard: ev.unknownCard === true,
                     message: ev.message || (ev.granted ? "Access Granted" : "Access Denied"),
@@ -218,6 +232,7 @@ async function handleStandaloneResponse(path: string[]) {
             success: true,
             users: db.users,
             total: db.users.length,
+            data: { users: db.users },
         });
     }
 
@@ -268,11 +283,35 @@ async function handleStandaloneResponse(path: string[]) {
     }
 
     if (routeKey.startsWith("history") || routeKey.startsWith("events")) {
+        if (routeKey === "events/stream" || routeKey === "history/stream" || routeKey === "stream") {
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(new TextEncoder().encode(": sse connected\n\n"));
+                    const interval = setInterval(() => {
+                        try {
+                            controller.enqueue(new TextEncoder().encode(": ping\n\n"));
+                        } catch {
+                            clearInterval(interval);
+                        }
+                    }, 15000);
+                },
+            });
+            return new NextResponse(stream, {
+                headers: {
+                    "Content-Type": "text/event-stream",
+                    "Cache-Control": "no-cache, no-transform",
+                    "Connection": "keep-alive",
+                },
+            });
+        }
+
         return NextResponse.json({
             success: true,
             events: db.events,
             logs: db.events,
+            data: db.events,
             total: db.events.length,
+            source: "local",
         });
     }
 
@@ -507,7 +546,7 @@ async function proxyRequest(request: NextRequest, subpath: string[]) {
         const init: RequestInit = {
             method: request.method,
             headers,
-            signal: AbortSignal.timeout(400),
+            signal: AbortSignal.timeout(1500),
         };
 
         if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
